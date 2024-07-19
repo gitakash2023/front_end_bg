@@ -103,34 +103,70 @@ const MainForm = () => {
     }
   };
 
-  const handleNext = () => {
-    setActiveStep((prevActiveStep) => {
-      const newStep = prevActiveStep + 1;
-      if (newStep < steps.length) {
-        setSnackbarMessage(`Moved to step: ${steps[newStep]}`);
-        setSnackbarOpen(true);
-        return newStep;
+  const handleNext = async () => {
+    setIsLoading(true);
+    try {
+      // Save data for the current step before moving to the next step
+      if (activeStep < steps.length - 1) {
+        if (candidateId) {
+          await _update(stepEndpoints[activeStep], formData);
+        } else {
+          await _create(stepEndpoints[activeStep], formData);
+        }
+
+        // Move to the next step
+        setActiveStep((prevActiveStep) => {
+          const newStep = prevActiveStep + 1;
+          fetchStepData(candidateId, newStep);  // Load data for the new step
+          setSnackbarMessage(`Moved to step: ${steps[newStep]}`);
+          setSuccess(true);
+          return newStep;
+        });
       } else {
         setSnackbarMessage("You are already at the last step.");
-        setSnackbarOpen(true);
-        return prevActiveStep;
+        setSuccess(false);
       }
-    });
+    } catch (error) {
+      console.error("Failed to save data", error);
+      setSnackbarMessage("Failed to save data. Please try again.");
+      setSuccess(false);
+    } finally {
+      setIsLoading(false);
+      setSnackbarOpen(true);
+    }
   };
 
-  const handleBack = () => {
-    setActiveStep((prevActiveStep) => {
-      const newStep = prevActiveStep - 1;
-      if (newStep >= 0) {
-        setSnackbarMessage(`Moved to step: ${steps[newStep]}`);
-        setSnackbarOpen(true);
-        return newStep;
+  const handleBack = async () => {
+    setIsLoading(true);
+    try {
+      // Save data for the current step before moving to the previous step
+      if (activeStep > 0) {
+        if (candidateId) {
+          await _update(stepEndpoints[activeStep], formData);
+        } else {
+          await _create(stepEndpoints[activeStep], formData);
+        }
+
+        // Move to the previous step
+        setActiveStep((prevActiveStep) => {
+          const newStep = prevActiveStep - 1;
+          fetchStepData(candidateId, newStep);  // Load data for the previous step
+          setSnackbarMessage(`Moved to step: ${steps[newStep]}`);
+          setSuccess(true);
+          return newStep;
+        });
       } else {
         setSnackbarMessage("You are already at the first step.");
-        setSnackbarOpen(true);
-        return prevActiveStep;
+        setSuccess(false);
       }
-    });
+    } catch (error) {
+      console.error("Failed to save data", error);
+      setSnackbarMessage("Failed to save data. Please try again.");
+      setSuccess(false);
+    } finally {
+      setIsLoading(false);
+      setSnackbarOpen(true);
+    }
   };
 
   const handleSave = async () => {
@@ -139,11 +175,12 @@ const MainForm = () => {
       if (candidateId) {
         await _update(stepEndpoints[activeStep], formData);
         setSnackbarMessage("Candidate information updated successfully!");
+        setSuccess(true);
       } else {
         await _create(stepEndpoints[activeStep], formData);
         setSnackbarMessage("Candidate information saved successfully!");
+        setSuccess(true);
       }
-      setSuccess(true);
       setSnackbarOpen(true);
     } catch (error) {
       console.error("Failed to save candidate data", error);
