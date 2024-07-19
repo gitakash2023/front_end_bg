@@ -13,6 +13,7 @@ const LoginForm = () => {
   });
   const searchParams = useSearchParams();
   const id = searchParams.get("id");
+  console.log("candidate Id",id)
 
   const [loading, setLoading] = useState(false); 
   const [error, setError] = useState(null);
@@ -33,6 +34,7 @@ const LoginForm = () => {
     try {
       const response = await _createlogin("/users/login", formData);
       const { user_role } = response;
+      console.log("user_role jo login kr rha hai",user_role)
       setFormData({ username: "", password: "" });
       setError(null);
       if (user_role === 3) {

@@ -1,3 +1,4 @@
+"use client"
 import React, { useState, useEffect } from 'react';
 import { DataGrid } from '@mui/x-data-grid';
 import { IconButton, Dialog, DialogTitle, DialogContent, DialogActions, Button, Snackbar, CircularProgress } from '@mui/material';
@@ -19,7 +20,7 @@ export default function CandidateList() {
     const [errorMessage, setErrorMessage] = useState('');
     const [column, setColumn] = useState(columns);
     const [snackbarOpen, setSnackbarOpen] = useState(false);
-    const [isDeleting, setIsDeleting] = useState(false); // State for delete operation loading indicator
+    const [isDeleting, setIsDeleting] = useState(false); 
 
     useEffect(() => {
         fetchData();
@@ -90,7 +91,7 @@ export default function CandidateList() {
             <>
                 <Link href={{
                     pathname: "/admin/candidates/add-candidates",
-                    query: { id: params.row.id }
+                    query: { id: params.row.id, step: params.row.currentStep }
                 }}>
                     <IconButton aria-label="edit" color="primary">
                         <Edit />

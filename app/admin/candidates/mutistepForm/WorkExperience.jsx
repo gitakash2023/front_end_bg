@@ -5,16 +5,38 @@ const WorkExperience = ({ formData, setFormData }) => {
   const handleChange = (e) => {
     const { name, value, files } = e.target;
     if (files) {
-      setFormData((prevData) => ({
-        ...prevData,
-        [name]: files[0], // Store the file object directly
-      }));
+      const file = files[0];
+      fileToBlob(file).then((blob) => {
+        console.log(`${name} Blob:`, blob); // For debugging
+        setFormData((prevData) => ({
+          ...prevData,
+          [name]: blob,
+        }));
+      }).catch((error) => {
+        console.error("Error converting file to Blob:", error);
+      });
     } else {
       setFormData((prevData) => ({
         ...prevData,
         [name]: value,
       }));
     }
+  };
+
+  const fileToBlob = async (file) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const arrayBuffer = reader.result;
+        const blob = new Blob([arrayBuffer], { type: file.type });
+        resolve(blob);
+      };
+      reader.onerror = (error) => {
+        console.error("Error reading file:", error);
+        reject(error);
+      };
+      reader.readAsArrayBuffer(file);
+    });
   };
 
   const fields = [
@@ -30,8 +52,6 @@ const WorkExperience = ({ formData, setFormData }) => {
     { name: "reasonForLeaving", label: "Reason for Leaving", type: "text" },
     { name: "relievingLetter", label: "Upload Relieving Letter", type: "file" },
     { name: "experienceLetter", label: "Upload Experience Letter", type: "file" },
-  
-   
   ];
 
   return (

@@ -4,12 +4,16 @@ import MenuItem from '@mui/material/MenuItem';
 
 const Education = ({ formData, setFormData }) => {
 
-  const handleChange = (e) => {
+  const handleChange = async (e) => {
     const { name, value, files } = e.target;
-    if (files) {
+
+    if (files && files.length > 0) {
+      const file = files[0];
+      const fileBlob = await convertFileToBlob(file);
+      console.log(`File ${name} as Blob:`, fileBlob);
       setFormData((prevData) => ({
         ...prevData,
-        [name]: files[0],
+        [name]: fileBlob,
       }));
     } else {
       setFormData((prevData) => ({
@@ -17,6 +21,18 @@ const Education = ({ formData, setFormData }) => {
         [name]: value,
       }));
     }
+  };
+
+  const convertFileToBlob = (file) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const blob = new Blob([reader.result], { type: file.type });
+        resolve(blob);
+      };
+      reader.onerror = reject;
+      reader.readAsArrayBuffer(file);
+    });
   };
 
   const fields = [
@@ -32,9 +48,7 @@ const Education = ({ formData, setFormData }) => {
         { label: "PhD", value: "PhD" },
         { label: "Other", value: "Other" },
       ],
-   
     },
-    
     { name: "university_name", label: "College/University Name", type: "text" },
     { name: "country", label: "Country", type: "text" },
     { name: "state", label: "State", type: "text" },
@@ -43,10 +57,8 @@ const Education = ({ formData, setFormData }) => {
     { name: "duration_end", label: "End Year", type: "date" },
     { name: "passing_year", label: "Passing Year", type: "date" },
     { name: "gpa_percentage", label: "GPA/Percentage", type: "text" },
-    
     { name: "roll_number", label: "Roll Number", type: "text" },
-   
-    { name: "certificate_number", label: " Highest Education Certificate Number", type: "text" },
+    { name: "certificate_number", label: "Highest Education Certificate Number", type: "text" },
     { name: "certificate", label: "Upload Highest Certificate", type: "file" },
   ];
 

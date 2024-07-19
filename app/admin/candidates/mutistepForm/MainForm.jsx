@@ -1,10 +1,12 @@
-"use client";
-
+"use client"
 import React, { useEffect, useState } from "react";
 import Stepper from "@mui/material/Stepper";
 import Step from "@mui/material/Step";
 import StepLabel from "@mui/material/StepLabel";
 import Button from "@mui/material/Button";
+import Snackbar from "@mui/material/Snackbar";
+import MuiAlert from "@mui/material/Alert";
+import CircularProgress from "@mui/material/CircularProgress";
 import GeneralInformation from "./GeneralInformation";
 import PermanentAddress from "./PermanentAddress";
 import Education from "./Education";
@@ -12,10 +14,9 @@ import CIBILInformation from "./CIBILInformation";
 import OtherReferenceInformation from "./OtherReferenceInformation";
 import WorkExperience from "./WorkExperience";
 import FathersDocument from "./FathersDocument";
-import { _create, _getById } from "../../../../utils/apiUtils";
-import { toast } from 'react-toastify'; // Import toast
-import { useSearchParams } from 'next/navigation';
-import CircularProgress from "@mui/material/CircularProgress"; // Import CircularProgress
+import { _create, _update, _getById } from "../../../../utils/apiUtils";
+import { toast } from "react-toastify";
+import { useRouter, useSearchParams } from "next/navigation";
 
 const steps = [
   "General Information",
@@ -23,8 +24,8 @@ const steps = [
   "Education",
   "CIBIL Information",
   "Candidate Reference",
-  'Work Experience',
-  'Father\'s Document'
+  "Work Experience",
+  "Father's Document"
 ];
 
 const stepEndpoints = [
@@ -33,115 +34,99 @@ const stepEndpoints = [
   "/candidate-education",
   "/candidate-cibil",
   "/candidate-reference",
-  '/candidate-work-experience',
-  '/fathers-document'
+  "/candidate-work-experience",
+  "/fathers-document"
 ];
 
+const Alert = React.forwardRef(function Alert(props, ref) {
+  return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
+});
+
 const MainForm = () => {
-  const [activeStep, setActiveStep] = useState(0);
-  const [formData, setFormData] = useState({});
-  const [candidateId, setCandidateId] = useState("");
-  const [isLoading, setIsLoading] = useState(false); 
-  const [success, setSuccess] = useState(false); 
+  const router = useRouter();
   const searchParams = useSearchParams();
-  const id = searchParams.get("id");
+  const candidateId = searchParams.get('id');
+  const stepParam = searchParams.get('step');
+
+  const [activeStep, setActiveStep] = useState(stepParam ? parseInt(stepParam) : 0);
+  const [formData, setFormData] = useState({});
+  const [isLoading, setIsLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
 
   useEffect(() => {
-    if (id) {
-      setCandidateId(id);
+    if (candidateId) {
+      fetchCandidateData(candidateId);
     }
-  }, []);
+  }, [candidateId]);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        if (id) {
-          const candidateData = await _getById("/candidate", id);
-          setFormData(candidateData);
-          console.log("candidateData", candidateData);
-          const isStepOneComplete = isGenInfoComplete(candidateData);
-          if (isStepOneComplete) {
-            setActiveStep(1);
-          }
-        }
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      }
-    };
-
-    fetchData();
-  }, [id, setFormData]);
-
-  const handleNext = async () => {
+  const fetchCandidateData = async (id) => {
     try {
-      setIsLoading(true); // Start loading indicator
-
-      let payload = { ...formData };
-
-      if (activeStep === 0) {
-        if (!payload.id) {
-          const response = await _create(stepEndpoints[activeStep], payload);
-          console.log(response);
-          if (response.isError) {
-            toast.error(response.msg);
-            setIsLoading(false); // Stop loading indicator on error
-            return;
-          }
-          setActiveStep((prevStep) => prevStep + 1);
-          const id = response.id;
-          console.log("responseId:", id);
-          setCandidateId(id);
-        } else {
-          setActiveStep((prevStep) => prevStep + 1);
-        }
-      } else {
-        payload = {
-          ...payload,
-          candidate_id: candidateId,
-        };
-
-        await _create(stepEndpoints[activeStep], payload);
-        setActiveStep((prevStep) => prevStep + 1);
-      }
-
-      console.log("Form data submitted successfully for step:", activeStep);
-      console.log("Next Step:", activeStep + 1);
+      setIsLoading(true);
+      const data = await _getById(`/candidate`, id);
+      setFormData(data);
+      setIsLoading(false);
     } catch (error) {
-      console.error("Failed to submit form data for step:", activeStep, error);
-    } finally {
-      setIsLoading(false); // Stop loading indicator after form submission
+      console.error("Failed to fetch candidate data", error);
+      setIsLoading(false);
     }
+  };
+
+  const handleNext = () => {
+    setActiveStep((prevActiveStep) => prevActiveStep + 1);
   };
 
   const handleBack = () => {
-    setActiveStep((prevStep) => prevStep - 1);
-    console.log("Previous Step:", activeStep - 1);
-    // Remove the toast message about email already exists
-    toast.dismiss(); // This dismisses any existing toast notifications
+    setActiveStep((prevActiveStep) => prevActiveStep - 1);
   };
 
-  const handleFinalSubmit = async () => {
+  const handleSave = async () => {
+    setIsLoading(true);
     try {
-      setIsLoading(true); // Start loading indicator
-
-      await _create(stepEndpoints[activeStep], formData);
-      console.log("Form data submitted successfully for step:", activeStep);
-      toast.success("Form submitted successfully!");
-      setSuccess(true); // Set success state to true
+      if (candidateId) {
+        await _update(stepEndpoints[activeStep], formData);
+        toast.success("Candidate information updated successfully!");
+      } else {
+        await _create(stepEndpoints[activeStep], formData);
+        toast.success("Candidate information saved successfully!");
+      }
+      setSuccess(true);
+      setSnackbarOpen(true);
     } catch (error) {
-      console.error(
-        "Failed to submit form data for final step:",
-        activeStep,
-        error
-      );
-      toast.error("Failed to submit form. Please try again.");
+      console.error("Failed to save candidate data", error);
+      toast.error("Failed to save candidate data. Please try again.");
     } finally {
-      setIsLoading(false); // Stop loading indicator after final submission
+      setIsLoading(false);
+    }
+  };
+
+  const handleCloseSnackbar = () => {
+    setSnackbarOpen(false);
+  };
+
+  const getStepContent = (step) => {
+    switch (step) {
+      case 0:
+        return <GeneralInformation formData={formData} setFormData={setFormData} />;
+      case 1:
+        return <PermanentAddress formData={formData} setFormData={setFormData} />;
+      case 2:
+        return <Education formData={formData} setFormData={setFormData} />;
+      case 3:
+        return <CIBILInformation formData={formData} setFormData={setFormData} />;
+      case 4:
+        return <OtherReferenceInformation formData={formData} setFormData={setFormData} />;
+      case 5:
+        return <WorkExperience formData={formData} setFormData={setFormData} />;
+      case 6:
+        return <FathersDocument formData={formData} setFormData={setFormData} />;
+      default:
+        return "Unknown step";
     }
   };
 
   return (
-    <div style={{ margin: "20px" }}>
+    <div>
       <Stepper activeStep={activeStep} alternativeLabel>
         {steps.map((label) => (
           <Step key={label}>
@@ -149,71 +134,32 @@ const MainForm = () => {
           </Step>
         ))}
       </Stepper>
-
-      {success ? ( // Show success message if success state is true
-        <div>
-          <h2>Form submitted successfully!</h2>
-        </div>
-      ) : (
-        <>
-          {activeStep === 0 && (
-            <GeneralInformation formData={formData} setFormData={setFormData} />
-          )}
-          {activeStep === 1 && (
-            <PermanentAddress formData={formData} setFormData={setFormData} />
-          )}
-          {activeStep === 2 && (
-            <Education formData={formData} setFormData={setFormData} />
-          )}
-          {activeStep === 3 && (
-            <CIBILInformation formData={formData} setFormData={setFormData} />
-          )}
-          {activeStep === 4 && (
-            <OtherReferenceInformation
-              formData={formData}
-              setFormData={setFormData}
-            />
-          )}
-          {activeStep === 5 && (
-            <WorkExperience formData={formData} setFormData={setFormData} />
-          )}
-          {activeStep === 6 && (
-            <FathersDocument formData={formData} setFormData={setFormData} />
-          )}
-
-          <div style={{ marginTop: "20px" }}>
-            <Button
-              disabled={activeStep === 0}
-              onClick={handleBack}
-              variant="outlined"
-              style={{ marginRight: "10px" }}
-            >
-              Back
-            </Button>
-            {activeStep < steps.length - 1 ? (
-              isLoading ? (
-                <CircularProgress size={24} />
-              ) : (
-                <Button onClick={handleNext} variant="contained">
-                  Next
-                </Button>
-              )
-            ) : (
-              isLoading ? (
-                <CircularProgress size={24} />
-              ) : (
-                <Button
-                  onClick={handleFinalSubmit}
-                  variant="contained"
-                  color="primary"
-                >
-                  Submit
-                </Button>
-              )
-            )}
+      <div>
+        {isLoading ? (
+          <CircularProgress />
+        ) : (
+          <div>
+            {getStepContent(activeStep)}
+            <div>
+              <Button disabled={activeStep === 0} onClick={handleBack}>
+                Back
+              </Button>
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={activeStep === steps.length - 1 ? handleSave : handleNext}
+              >
+                {activeStep === steps.length - 1 ? "Save" : "Next"}
+              </Button>
+            </div>
           </div>
-        </>
-      )}
+        )}
+      </div>
+      <Snackbar open={snackbarOpen} autoHideDuration={6000} onClose={handleCloseSnackbar}>
+        <Alert onClose={handleCloseSnackbar} severity={success ? "success" : "error"}>
+          {success ? "Candidate information saved successfully!" : "Failed to save candidate information"}
+        </Alert>
+      </Snackbar>
     </div>
   );
 };

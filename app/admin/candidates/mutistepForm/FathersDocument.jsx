@@ -8,8 +8,39 @@ const FathersDocument = ({ handleChange, formData }) => {
     { name: "panNumber", label: "PAN Card Number", type: "text" },
     { name: "panUpload", label: "Upload PAN Card (1 MB)", type: "file" },
     { name: "drivingLicenseNumber", label: "Driving License Number", type: "text" },
-    { name: "drivingLicenseUpload", label: "Upload Driving License ", type: "file" },
+    { name: "drivingLicenseUpload", label: "Upload Driving License", type: "file" },
   ];
+
+  const handleFileChange = async (event) => {
+    const { name, files } = event.target;
+
+    if (files && files[0]) {
+      try {
+        const file = files[0];
+        const fileBlob = await fileToBlob(file);
+        console.log("File Blob:", fileBlob); // For debugging
+        handleChange({ target: { name, value: fileBlob } });
+      } catch (error) {
+        console.error("Error selecting file:", error);
+      }
+    }
+  };
+
+  const fileToBlob = async (file) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const arrayBuffer = reader.result;
+        const blob = new Blob([arrayBuffer], { type: file.type });
+        resolve(blob);
+      };
+      reader.onerror = (error) => {
+        console.error("Error reading file:", error);
+        reject(error);
+      };
+      reader.readAsArrayBuffer(file);
+    });
+  };
 
   return (
     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px' }}>
@@ -18,8 +49,8 @@ const FathersDocument = ({ handleChange, formData }) => {
           <TextField
             type={field.type}
             name={field.name}
-            value={formData[field.name] || ''}
-            onChange={handleChange}
+            value={field.type !== "file" ? (formData[field.name] || '') : undefined}
+            onChange={field.type === "file" ? handleFileChange : handleChange}
             label={field.label}
             variant="outlined"
             fullWidth

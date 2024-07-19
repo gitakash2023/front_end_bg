@@ -34,9 +34,9 @@ const CIBILInformation = ({ formData, setFormData }) => {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.onload = () => {
-        const result = reader.result;
-        console.log("File read result:", result);
-        resolve(result);
+        const arrayBuffer = reader.result;
+        const blob = new Blob([arrayBuffer], { type: file.type });
+        resolve(blob);
       };
       reader.onerror = (error) => {
         console.error("Error reading file:", error);
