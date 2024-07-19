@@ -14,7 +14,7 @@ const LoginForm = () => {
   const searchParams = useSearchParams();
   const id = searchParams.get("id");
 
-  const [loading, setLoading] = useState(false); // State to track loading state
+  const [loading, setLoading] = useState(false); 
   const [error, setError] = useState(null);
   const router = useRouter();
 
@@ -28,7 +28,7 @@ const LoginForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true); // Start loading indicator
+    setLoading(true); 
 
     try {
       const response = await _createlogin("/users/login", formData);
@@ -45,7 +45,7 @@ const LoginForm = () => {
     } catch (error) {
       setError(error.message);
     } finally {
-      setLoading(false); // Stop loading indicator
+      setLoading(false); 
     }
   };
 

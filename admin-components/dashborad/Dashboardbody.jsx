@@ -81,18 +81,6 @@ function DashboardBody() {
             >
               {loadingModal ? <CircularProgress size={24} /> : "New Company"}
             </Button>
-            {/* <Link
-              href="/admin/candidates/add-candidates"
-              passHref
-              style={{ textDecoration: "none" }}
-            >
-              <Button
-                variant="contained"
-                startIcon={<BsPlus style={{ fontSize: "1.2em" }} />}
-              >
-                New Candidate
-              </Button>
-            </Link> */}
           </div>
         </div>
       </div>

@@ -52,8 +52,6 @@ export const fields = [
     type: "text",
   },
   { name: "name", label: "Candidate Name", type: "text" },
-  { name: "mobile_no", label: "Candidate Mobile No", type: "text" },
-  { name: "email_id", label: "Candidate Email ID", type: "email" },
   {
     name: "gender",
     label: "Candidate Gender",
@@ -67,6 +65,11 @@ export const fields = [
   },
   { name: "dob", label: "Candidate DOB", type: "date" },
   { name: "father_name", label: "Candidate Father's Name", type: "text" },
+  { name: "mobile_no", label: "Candidate Mobile No", type: "text" },
+  { name: "email_id", label: "Candidate Email ID", type: "email" },
+ 
+ 
+  
 ];
 
 const GeneralInformation = ({ formData, setFormData }) => {

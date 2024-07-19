@@ -14,12 +14,11 @@ const OtherReferenceInformation = ({ formData, setFormData }) => {
   const fields = [
     { name: "ref_name", label: "Reference Name", type: "text" },
     { name: "ref_designation", label: "Reference Designation", type: "text" },
-    { name: "company_name", label: "Company Name", type: "text" },
+    { name: "company_name", label: " Reference Company Name", type: "text" },
     { name: "ref_contact_num", label: "Reference Contact Number", type: "text" },
     { name: "ref_email", label: "Reference Email", type: "email" },
     { name: "ref_relationship", label: "Relationship to Candidate", type: "text" },
-    { name: "ref_known_since", label: "Known Since (Years)", type: "number" },
-    { name: "ref_address", label: "Reference Address", type: "text" },
+  
    
   ];
 

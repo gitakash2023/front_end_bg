@@ -32,7 +32,7 @@ const Education = ({ formData, setFormData }) => {
         { label: "PhD", value: "PhD" },
         { label: "Other", value: "Other" },
       ],
-      required: true,
+   
     },
     
     { name: "university_name", label: "College/University Name", type: "text" },
@@ -41,11 +41,12 @@ const Education = ({ formData, setFormData }) => {
     { name: "city", label: "City", type: "text" },
     { name: "duration_start", label: "Start Year", type: "date" },
     { name: "duration_end", label: "End Year", type: "date" },
-    { name: "gpa_percentage", label: "GPA/Percentage", type: "text" },
     { name: "passing_year", label: "Passing Year", type: "date" },
+    { name: "gpa_percentage", label: "GPA/Percentage", type: "text" },
+    
     { name: "roll_number", label: "Roll Number", type: "text" },
    
-    { name: "certificate_number", label: " Highest Certificate Number", type: "text" },
+    { name: "certificate_number", label: " Highest Education Certificate Number", type: "text" },
     { name: "certificate", label: "Upload Highest Certificate", type: "file" },
   ];
 
