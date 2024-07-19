@@ -44,8 +44,7 @@ const Alert = React.forwardRef(function Alert(props, ref) {
 const MainForm = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const candidate_id = searchParams.get("id");
-  const [candidateId,setCandidateId] = useState(candidate_id)
+  const id = searchParams.get("id");
   const stepParam = searchParams.get("step");
 
   const [activeStep, setActiveStep] = useState(stepParam ? parseInt(stepParam) : 0);
@@ -57,18 +56,17 @@ const MainForm = () => {
   const [snackbarMessage, setSnackbarMessage] = useState("");
 
   useEffect(() => {
-    if (candidateId) {
-      fetchStepData(candidateId, activeStep);
+    if (id) {
+      fetchStepData(id, activeStep);
     }
-  }, [activeStep, candidateId]);
+  }, [activeStep, id]);
 
-  const fetchStepData = async (candiadateId, step) => {
-    if (candiadateId && step >= 0 && step < stepEndpoints.length) {
+  const fetchStepData = async (id, step) => {
+    if (id && step >= 0 && step < stepEndpoints.length) {
       try {
         setIsLoading(true);
-        let data = await _getById(stepEndpoints[step], candiadateId);
-        data = data?.length>0?data[0]:{}
-        setStepData({...data,candidate_id:candidateId});
+        const data = await _getById(stepEndpoints[step], id);
+        setStepData(data);
         setSnackbarMessage(`Data for step ${steps[step]} loaded successfully.`);
         setSuccess(true);
       } catch (error) {
@@ -85,24 +83,22 @@ const MainForm = () => {
   const handleNext = async () => {
     setIsLoading(true);
     try {
-      if (stepData.id) {
+      if (id) {
         // Update existing candidate data
-        await _update(stepEndpoints[activeStep], stepData.id, stepData);
+        await _update(stepEndpoints[activeStep], id, stepData);
       } else {
         // Create new candidate data
         const createdData = await _create(stepEndpoints[activeStep], stepData);
         // Save the newly created candidate ID
-        if(activeStep==0){
-          setCandidateId(createdData.id)
-        }
-        setFormData({ ...formData, candidate_id: createdData.id });
+        setFormData({ ...formData, id: createdData.id });
         // Update the URL with the new ID
-        router.push(`/admin/candidates/add-candidates?candidate_id=${candidateId}&step=${activeStep + 1}`);
+        router.push(`/admin/candidates/add-candidates?id=${createdData.id}&step=${activeStep + 1}`);
       }
 
       // Move to the next step
       setActiveStep((prevActiveStep) => {
         const newStep = prevActiveStep + 1;
+        fetchStepData(id || formData.id, newStep); // Load data for the new step
         setSnackbarMessage(`Moved to step: ${steps[newStep]}`);
         setSuccess(true);
         return newStep;
@@ -120,13 +116,22 @@ const MainForm = () => {
   const handleBack = async () => {
     setIsLoading(true);
     try {
-      router.push(`/admin/candidates/add-candidates?id=${candidateId}&step=${activeStep - 1}`);
-
+      if (id) {
+        // Update existing candidate data
+        await _update(stepEndpoints[activeStep], id, stepData);
+      } else {
+        // Create new candidate data
+        const createdData = await _create(stepEndpoints[activeStep], stepData);
+        // Save the newly created candidate ID
+        setFormData({ ...formData, id: createdData.id });
+        // Update the URL with the new ID
+        router.push(`/admin/candidates/add-candidates?id=${createdData.id}&step=${activeStep - 1}`);
+      }
 
       // Move to the previous step
       setActiveStep((prevActiveStep) => {
         const newStep = prevActiveStep - 1;
-  
+        fetchStepData(id || formData.id, newStep); // Load data for the previous step
         setSnackbarMessage(`Moved to step: ${steps[newStep]}`);
         setSuccess(true);
         return newStep;
@@ -144,20 +149,20 @@ const MainForm = () => {
   const handleSave = async () => {
     setIsLoading(true);
     try {
-      if (stepData.id) {
+      if (id) {
         // Update existing candidate data
-        await _update(stepEndpoints[activeStep], stepData.id, stepData);
+        await _update(stepEndpoints[activeStep], id, stepData);
         setSnackbarMessage("Candidate information updated successfully!");
         setSuccess(true);
       } else {
         // Create new candidate data
         const createdData = await _create(stepEndpoints[activeStep], stepData);
         // Save the newly created candidate ID
-        
+        setFormData({ ...formData, id: createdData.id });
         setSnackbarMessage("Candidate information saved successfully!");
         setSuccess(true);
         // Update the URL with the new ID
-        router.push(`/admin/candidates/add-candidates?id=${candiadateId}&step=${activeStep}`);
+        router.push(`/admin/candidates/add-candidates?id=${createdData.id}&step=${activeStep}`);
       }
       setSnackbarOpen(true);
     } catch (error) {
