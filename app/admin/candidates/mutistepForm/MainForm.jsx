@@ -41,8 +41,8 @@ const MainForm = () => {
   const [activeStep, setActiveStep] = useState(0);
   const [formData, setFormData] = useState({});
   const [candidateId, setCandidateId] = useState("");
-  const [isLoading, setIsLoading] = useState(false); // State for loading indicator
-  const [success, setSuccess] = useState(false); // State for success message
+  const [isLoading, setIsLoading] = useState(false); 
+  const [success, setSuccess] = useState(false); 
   const searchParams = useSearchParams();
   const id = searchParams.get("id");
 

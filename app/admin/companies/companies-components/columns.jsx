@@ -1,5 +1,5 @@
 const staticColumns = [
-  { field: "id", headerName: "Employee ID", width: 200 },
+  { field: "id", headerName: "Company ID", width: 200 },
   { field: "name", headerName: "Name", width: 200 },
   { field: "mobile_number", headerName: "Mobile no", width: 200 },
   { field: "email_id", headerName: "Email", width: 200 },
