@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import React, { useEffect, useState } from "react";
 import Stepper from "@mui/material/Stepper";
 import Step from "@mui/material/Step";
@@ -15,7 +15,6 @@ import OtherReferenceInformation from "./OtherReferenceInformation";
 import WorkExperience from "./WorkExperience";
 import FathersDocument from "./FathersDocument";
 import { _create, _update, _getById } from "../../../../utils/apiUtils";
-import { toast } from "react-toastify";
 import { useRouter, useSearchParams } from "next/navigation";
 
 const steps = [
@@ -50,9 +49,11 @@ const MainForm = () => {
 
   const [activeStep, setActiveStep] = useState(stepParam ? parseInt(stepParam) : 0);
   const [formData, setFormData] = useState({});
+  const [stepData, setStepData] = useState({});
   const [isLoading, setIsLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
 
   useEffect(() => {
     if (candidateId) {
@@ -60,24 +61,76 @@ const MainForm = () => {
     }
   }, [candidateId]);
 
+  useEffect(() => {
+    if (candidateId) {
+      fetchStepData(candidateId, activeStep);
+    }
+  }, [activeStep, candidateId]);
+
   const fetchCandidateData = async (id) => {
     try {
       setIsLoading(true);
       const data = await _getById(`/candidate`, id);
       setFormData(data);
-      setIsLoading(false);
+      setSnackbarMessage("Candidate data loaded successfully.");
+      setSuccess(true);
     } catch (error) {
       console.error("Failed to fetch candidate data", error);
+      setSnackbarMessage("Failed to fetch candidate data. Please try again.");
+      setSuccess(false);
+    } finally {
       setIsLoading(false);
+      setSnackbarOpen(true);
+    }
+  };
+
+  const fetchStepData = async (id, step) => {
+    if (id && step >= 0 && step < stepEndpoints.length) {
+      try {
+        setIsLoading(true);
+        const data = await _getById(stepEndpoints[step], id);
+        setStepData(data);
+        setSnackbarMessage(`Data for step ${steps[step]} loaded successfully.`);
+        setSuccess(true);
+      } catch (error) {
+        console.error(`Failed to fetch data for step ${step}`, error);
+        setSnackbarMessage(`Failed to fetch data for step ${steps[step]}. Please try again.`);
+        setSuccess(false);
+      } finally {
+        setIsLoading(false);
+        setSnackbarOpen(true);
+      }
     }
   };
 
   const handleNext = () => {
-    setActiveStep((prevActiveStep) => prevActiveStep + 1);
+    setActiveStep((prevActiveStep) => {
+      const newStep = prevActiveStep + 1;
+      if (newStep < steps.length) {
+        setSnackbarMessage(`Moved to step: ${steps[newStep]}`);
+        setSnackbarOpen(true);
+        return newStep;
+      } else {
+        setSnackbarMessage("You are already at the last step.");
+        setSnackbarOpen(true);
+        return prevActiveStep;
+      }
+    });
   };
 
   const handleBack = () => {
-    setActiveStep((prevActiveStep) => prevActiveStep - 1);
+    setActiveStep((prevActiveStep) => {
+      const newStep = prevActiveStep - 1;
+      if (newStep >= 0) {
+        setSnackbarMessage(`Moved to step: ${steps[newStep]}`);
+        setSnackbarOpen(true);
+        return newStep;
+      } else {
+        setSnackbarMessage("You are already at the first step.");
+        setSnackbarOpen(true);
+        return prevActiveStep;
+      }
+    });
   };
 
   const handleSave = async () => {
@@ -85,16 +138,17 @@ const MainForm = () => {
     try {
       if (candidateId) {
         await _update(stepEndpoints[activeStep], formData);
-        toast.success("Candidate information updated successfully!");
+        setSnackbarMessage("Candidate information updated successfully!");
       } else {
         await _create(stepEndpoints[activeStep], formData);
-        toast.success("Candidate information saved successfully!");
+        setSnackbarMessage("Candidate information saved successfully!");
       }
       setSuccess(true);
       setSnackbarOpen(true);
     } catch (error) {
       console.error("Failed to save candidate data", error);
-      toast.error("Failed to save candidate data. Please try again.");
+      setSnackbarMessage("Failed to save candidate data. Please try again.");
+      setSuccess(false);
     } finally {
       setIsLoading(false);
     }
@@ -107,19 +161,19 @@ const MainForm = () => {
   const getStepContent = (step) => {
     switch (step) {
       case 0:
-        return <GeneralInformation formData={formData} setFormData={setFormData} />;
+        return <GeneralInformation formData={formData} setFormData={setFormData} stepData={stepData} />;
       case 1:
-        return <PermanentAddress formData={formData} setFormData={setFormData} />;
+        return <PermanentAddress formData={formData} setFormData={setFormData} stepData={stepData} />;
       case 2:
-        return <Education formData={formData} setFormData={setFormData} />;
+        return <Education formData={formData} setFormData={setFormData} stepData={stepData} />;
       case 3:
-        return <CIBILInformation formData={formData} setFormData={setFormData} />;
+        return <CIBILInformation formData={formData} setFormData={setFormData} stepData={stepData} />;
       case 4:
-        return <OtherReferenceInformation formData={formData} setFormData={setFormData} />;
+        return <OtherReferenceInformation formData={formData} setFormData={setFormData} stepData={stepData} />;
       case 5:
-        return <WorkExperience formData={formData} setFormData={setFormData} />;
+        return <WorkExperience formData={formData} setFormData={setFormData} stepData={stepData} />;
       case 6:
-        return <FathersDocument formData={formData} setFormData={setFormData} />;
+        return <FathersDocument formData={formData} setFormData={setFormData} stepData={stepData} />;
       default:
         return "Unknown step";
     }
@@ -157,7 +211,7 @@ const MainForm = () => {
       </div>
       <Snackbar open={snackbarOpen} autoHideDuration={6000} onClose={handleCloseSnackbar}>
         <Alert onClose={handleCloseSnackbar} severity={success ? "success" : "error"}>
-          {success ? "Candidate information saved successfully!" : "Failed to save candidate information"}
+          {snackbarMessage}
         </Alert>
       </Snackbar>
     </div>
