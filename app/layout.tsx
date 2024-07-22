@@ -3,6 +3,7 @@ import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import 'bootstrap/dist/css/bootstrap.min.css';
 import Logo from '@/common-components/header-components/Logo';
+import { Box } from '@mui/material';
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
@@ -17,7 +18,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-    <Logo/>
+      {/* <Box sx={{ marginLeft: 1 ,marginTop:1}}>
+          <Logo />
+        </Box> */}
         {children}
        
         </body>

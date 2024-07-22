@@ -1,6 +1,7 @@
 import React from 'react';
 import TextField from '@mui/material/TextField';
 import MenuItem from '@mui/material/MenuItem';
+import DateFormate from "../../../../common-components/DateFormate";
 
 const Education = ({ formData, setFormData }) => {
 
@@ -10,7 +11,6 @@ const Education = ({ formData, setFormData }) => {
     if (files && files.length > 0) {
       const file = files[0];
       const fileBlob = await convertFileToBlob(file);
-      console.log(`File ${name} as Blob:`, fileBlob);
       setFormData((prevData) => ({
         ...prevData,
         [name]: fileBlob,
@@ -38,7 +38,7 @@ const Education = ({ formData, setFormData }) => {
   const fields = [
     { name: "course_name", label: "Course Name", type: "text" },
     {
-      name: "heighest_qualify",
+      name: "highest_qualify",
       label: "Highest Qualification",
       type: "select",
       options: [
@@ -94,6 +94,13 @@ const Education = ({ formData, setFormData }) => {
               fullWidth
               margin="normal"
               InputLabelProps={{ shrink: true }}
+            />
+          ) : field.type === 'date' ? (
+            <DateFormate
+              name={field.name}
+              label={field.label}
+              value={formData[field.name]}
+              onChange={handleChange}
             />
           ) : (
             <TextField

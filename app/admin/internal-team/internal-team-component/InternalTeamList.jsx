@@ -55,7 +55,7 @@ export default function InternalTeamList({ teamListData, onEdit, updateTeamList 
 
     const confirmDelete = async () => {
         try {
-            await _delete('client', selectedTeam.id);
+            await _delete('/internal-team', selectedTeam.id);
             await updateTeamList(); 
             setDialogVisibility({ isDeleteDialogOpen: false });
         } catch (error) {

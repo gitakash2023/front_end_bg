@@ -1,8 +1,9 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { TextField, Autocomplete } from "@mui/material";
+import { TextField, Autocomplete, MenuItem } from "@mui/material";
 import { _getAll, _getById } from "../../../../utils/apiUtils";
 import { useSearchParams } from "next/navigation";
+import DateFormate from "../../../../common-components/DateFormate";
 
 export const fields = [
   {
@@ -10,8 +11,8 @@ export const fields = [
     label: "E-mail Notification to candidate",
     type: "select",
     options: [
-      { label: "Yes", value: "Yes" },
-      { label: "No", value: "No" },
+      { label: "Yes", value: true },
+      { label: "No", value: false },
     ],
   },
   {
@@ -19,8 +20,8 @@ export const fields = [
     label: "E-mail Notification to client",
     type: "select",
     options: [
-      { label: "Yes", value: "Yes" },
-      { label: "No", value: "No" },
+      { label: "Yes", value: true },
+      { label: "No", value: false },
     ],
   },
   {
@@ -28,8 +29,8 @@ export const fields = [
     label: "E-mail Notification to admin",
     type: "select",
     options: [
-      { label: "Yes", value: "Yes" },
-      { label: "No", value: "No" },
+      { label: "Yes", value: true },
+      { label: "No", value: false },
     ],
   },
   {
@@ -67,9 +68,6 @@ export const fields = [
   { name: "father_name", label: "Candidate Father's Name", type: "text" },
   { name: "mobile_no", label: "Candidate Mobile No", type: "text" },
   { name: "email_id", label: "Candidate Email ID", type: "email" },
- 
- 
-  
 ];
 
 const GeneralInformation = ({ formData, setFormData }) => {
@@ -79,7 +77,6 @@ const GeneralInformation = ({ formData, setFormData }) => {
   const id = searchParams.get("id");
 
   useEffect(() => {
-    // Initialize form data with default values from fields array
     const initialFormData = fields.reduce((acc, field) => {
       if (field.type === "select") {
         acc[field.name] = field.options[0].value;
@@ -97,8 +94,17 @@ const GeneralInformation = ({ formData, setFormData }) => {
 
         if (id) {
           const candidateData = await _getById("/candidate", id);
-          setFormData((prevData) => ({ ...prevData, ...candidateData }));
-          console.log("candidateData", candidateData);
+          if (candidateData) {
+            setFormData((prevData) => ({
+              ...prevData,
+              ...candidateData,
+              notify_candidate: candidateData.notify_candidate ? true : false,
+              notify_client: candidateData.notify_client ? true : false,
+              notify_admin: candidateData.notify_admin ? true : false,
+              form_filled_by: candidateData.form_filled_by || "Candidate",
+            }));
+            setProcessList(candidateData.process_list || []);
+          }
         }
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -182,7 +188,7 @@ const GeneralInformation = ({ formData, setFormData }) => {
             <TextField
               select
               name={field.name}
-              value={formData[field.name] || field.options[0].value}
+              value={formData[field.name]}
               onChange={handleChange}
               label={field.label}
               variant="outlined"
@@ -196,6 +202,13 @@ const GeneralInformation = ({ formData, setFormData }) => {
                 </option>
               ))}
             </TextField>
+          ) : field.type === "date" ? (
+            <DateFormate
+              name={field.name}
+              label={field.label}
+              value={formData[field.name]}
+              onChange={handleChange}
+            />
           ) : (
             <TextField
               type={field.type}
@@ -206,7 +219,6 @@ const GeneralInformation = ({ formData, setFormData }) => {
               variant="outlined"
               fullWidth
               margin="normal"
-              InputLabelProps={field.type === "date" ? { shrink: true } : {}}
             />
           )}
         </div>

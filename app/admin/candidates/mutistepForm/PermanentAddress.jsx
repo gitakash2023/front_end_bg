@@ -1,8 +1,9 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { TextField, MenuItem, Checkbox, Button, FormControlLabel } from "@mui/material";
-import { _getById } from "../../../../utils/apiUtils";
 import { useSearchParams } from "next/navigation";
+import DateFormate from "../../../../common-components/DateFormate";
+
 
 const fields = [
   { name: "country_id", label: "Country", type: "text" },
@@ -10,7 +11,7 @@ const fields = [
   { name: "district_id", label: "District", type: "text" },
   { name: "city_id", label: "City", type: "text" },
   { name: "postal_id", label: "Zip/Postal Code", type: "text" },
-  { name: "house_type", label: "House Type", type: "select" },
+  { name: "house_type", label: "House Type", type: "select", options: ["Owned", "Rented"] },
   { name: "stay_from_date", label: "Stay From Date", type: "date" },
   { name: "stay_till_date", label: "Stay Till Date", type: "date" },
   { name: "full_address", label: "Full Address", type: "text" }
@@ -22,50 +23,20 @@ const PermanentAddress = ({ formData, setFormData }) => {
   const searchParams = useSearchParams();
   const id = searchParams.get("id");
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        if (id) {
-          let addressData = await _getById(`/candidate-address`, id);
-          addressData = addressData.length > 0 ? addressData[0] : {};
-          setFormData(addressData);
-        }
-      } catch (error) {
-        console.error("Error fetching address data:", error);
-      }
-    };
-
-    fetchData();
-  }, [id]);
-
-  useEffect(() => {
-    if (isSameAddress) {
-      const updatedCurrentAddress = {};
-      fields.forEach((field) => {
-        updatedCurrentAddress[`current_${field.name}`] = formData[field.name];
-      });
-
-      setFormData((prevData) => ({
-        ...prevData,
-        ...updatedCurrentAddress,
-      }));
-    } else {
-      setFormData((prevData) => {
-        const updatedData = { ...prevData };
-        fields.forEach((field) => {
-          updatedData[`current_${field.name}`] = '';
-        });
-        return updatedData;
-      });
-    }
-  }, [isSameAddress, formData]);
-
   const handleCheckboxChange = (event) => {
     setIsSameAddress(event.target.checked);
   };
 
   const handleAddAddressClick = () => {
     setShowCurrentAddressForm(true);
+  };
+
+  const handleChange = (event) => {
+    const { name, value } = event.target;
+    setFormData((prevData) => ({
+      ...prevData,
+      [name]: value
+    }));
   };
 
   return (
@@ -78,22 +49,32 @@ const PermanentAddress = ({ formData, setFormData }) => {
                 select
                 name={field.name}
                 value={formData[field.name] || ''}
-                onChange={(event) => setFormData((prevData) => ({ ...prevData, [field.name]: event.target.value }))}
+                onChange={handleChange}
                 label={field.label}
                 variant="outlined"
                 fullWidth
                 margin="normal"
                 InputLabelProps={{ shrink: true }}
               >
-                <MenuItem value="owned">Owned</MenuItem>
-                <MenuItem value="rented">Rented</MenuItem>
+                {field.options.map((option, idx) => (
+                  <MenuItem key={idx} value={option.toLowerCase()}>
+                    {option}
+                  </MenuItem>
+                ))}
               </TextField>
+            ) : field.type === "date" ? (
+              <DateFormate
+                name={field.name}
+                label={field.label}
+                value={formData[field.name]}
+                onChange={handleChange}
+              />
             ) : (
               <TextField
                 type={field.type}
                 name={field.name}
                 value={formData[field.name] || ''}
-                onChange={(event) => setFormData((prevData) => ({ ...prevData, [field.name]: event.target.value }))}
+                onChange={handleChange}
                 label={field.label}
                 variant="outlined"
                 fullWidth
@@ -126,22 +107,32 @@ const PermanentAddress = ({ formData, setFormData }) => {
                     select
                     name={`current_${field.name}`}
                     value={formData[`current_${field.name}`] || ''}
-                    onChange={(event) => setFormData((prevData) => ({ ...prevData, [`current_${field.name}`]: event.target.value }))}
+                    onChange={handleChange}
                     label={field.label}
                     variant="outlined"
                     fullWidth
                     margin="normal"
                     InputLabelProps={{ shrink: true }}
                   >
-                    <MenuItem value="owned">Owned</MenuItem>
-                    <MenuItem value="rented">Rented</MenuItem>
+                    {field.options.map((option, idx) => (
+                      <MenuItem key={idx} value={option.toLowerCase()}>
+                        {option}
+                      </MenuItem>
+                    ))}
                   </TextField>
+                ) : field.type === "date" ? (
+                  <DateFormate
+                    name={`current_${field.name}`}
+                    label={field.label}
+                    value={formData[`current_${field.name}`]}
+                    onChange={handleChange}
+                  />
                 ) : (
                   <TextField
                     type={field.type}
                     name={`current_${field.name}`}
                     value={formData[`current_${field.name}`] || ''}
-                    onChange={(event) => setFormData((prevData) => ({ ...prevData, [`current_${field.name}`]: event.target.value }))}
+                    onChange={handleChange}
                     label={field.label}
                     variant="outlined"
                     fullWidth

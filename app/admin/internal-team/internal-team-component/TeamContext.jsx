@@ -27,7 +27,7 @@ function TeamContext() {
 
     const updateTeamList = async () => {
         try {
-            const data = await _getAll('/client');
+            const data = await _getAll('/internal-team');
             setTeamListData(data);
         } catch (error) {
             console.error('Failed to fetch team data. Please try again later.', error);

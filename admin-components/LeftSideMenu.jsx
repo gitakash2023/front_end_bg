@@ -2,8 +2,12 @@
 import { FaUser, FaUsers, FaUserCog, FaSave, FaChartBar } from "react-icons/fa";
 import MenuItem from '../common-components/MenuItem';
 
+
 const LeftSideMenu = () => {
   return (
+    <>
+ 
+    
     <div className="bg-light text-white p-4" style={{ height: "80vh" }}>
       <ul className="list-unstyled">
         <MenuItem
@@ -20,6 +24,7 @@ const LeftSideMenu = () => {
         />
       </ul>
     </div>
+    </>
   );
 };
 

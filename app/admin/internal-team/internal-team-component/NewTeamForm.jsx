@@ -38,10 +38,10 @@ const NewTeamForm = ({ team, onClose, updateTeamList }) => {
     const onSubmit = async (values, { setSubmitting, resetForm }) => {
         try {
             if (team) {
-                await _update('client', team.id, values);
+                await _update('/internal-team', team.id, values);
                 setSuccessMessage('Team updated successfully!');
             } else {
-                await _create('/client', values);
+                await _create('/internal-team', values);
                 setSuccessMessage('Team registered successfully!');
             }
             onClose();

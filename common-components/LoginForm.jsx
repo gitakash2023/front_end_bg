@@ -5,6 +5,7 @@ import Link from "next/link";
 import { TextField, Button, Grid, Typography, CircularProgress } from "@mui/material";
 import { FaUser, FaLock } from "react-icons/fa";
 import { _createlogin } from "../utils/apiUtils";
+import Logo from "./header-components/Logo";
 
 const LoginForm = () => {
   const [formData, setFormData] = useState({
@@ -33,6 +34,7 @@ const LoginForm = () => {
 
     try {
       const response = await _createlogin("/users/login", formData);
+      
       const { user_role } = response;
       console.log("user_role jo login kr rha hai",user_role)
       setFormData({ username: "", password: "" });
@@ -52,6 +54,9 @@ const LoginForm = () => {
   };
 
   return (
+
+    <>
+    <Logo/>
     <Grid
       container
       justifyContent="center"
@@ -134,6 +139,7 @@ const LoginForm = () => {
         </div>
       </Grid>
     </Grid>
+    </>
   );
 };
 

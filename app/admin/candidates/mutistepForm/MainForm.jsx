@@ -45,9 +45,9 @@ const MainForm = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const candidate_id = searchParams.get("id");
-  const [candidateId,setCandidateId] = useState(candidate_id)
   const stepParam = searchParams.get("step");
 
+  const [candidateId, setCandidateId] = useState(candidate_id);
   const [activeStep, setActiveStep] = useState(stepParam ? parseInt(stepParam) : 0);
   const [formData, setFormData] = useState({});
   const [stepData, setStepData] = useState({});
@@ -62,13 +62,13 @@ const MainForm = () => {
     }
   }, [activeStep, candidateId]);
 
-  const fetchStepData = async (candiadateId, step) => {
-    if (candiadateId && step >= 0 && step < stepEndpoints.length) {
+  const fetchStepData = async (candidateId, step) => {
+    if (candidateId && step >= 0 && step < stepEndpoints.length) {
       try {
         setIsLoading(true);
-        let data = await _getById(stepEndpoints[step], candiadateId);
-        data = data?.length>0?data[0]:{}
-        setStepData({...data,candidate_id:candidateId});
+        let data = await _getById(stepEndpoints[step], candidateId);
+        data = data?.length > 0 ? data[0] : {};
+        setStepData({ ...data, candidate_id: candidateId });
         setSnackbarMessage(`Data for step ${steps[step]} loaded successfully.`);
         setSuccess(true);
       } catch (error) {
@@ -86,27 +86,18 @@ const MainForm = () => {
     setIsLoading(true);
     try {
       if (stepData.id) {
-        // Update existing candidate data
         await _update(stepEndpoints[activeStep], stepData.id, stepData);
       } else {
-        // Create new candidate data
         const createdData = await _create(stepEndpoints[activeStep], stepData);
-        // Save the newly created candidate ID
-        if(activeStep==0){
-          setCandidateId(createdData.id)
+        if (activeStep === 0) {
+          setCandidateId(createdData.id);
         }
         setFormData({ ...formData, candidate_id: createdData.id });
-        // Update the URL with the new ID
-        router.push(`/admin/candidates/add-candidates?candidate_id=${candidateId}&step=${activeStep + 1}`);
+        router.push(`/admin/candidates/add-candidates?id=${createdData.id}&step=${activeStep + 1}`);
       }
-
-      // Move to the next step
-      setActiveStep((prevActiveStep) => {
-        const newStep = prevActiveStep + 1;
-        setSnackbarMessage(`Moved to step: ${steps[newStep]}`);
-        setSuccess(true);
-        return newStep;
-      });
+      const nextStep = activeStep + 1;
+      setActiveStep(nextStep);
+      fetchStepData(candidateId, nextStep);
     } catch (error) {
       console.error("Failed to save data", error);
       setSnackbarMessage("Failed to save data. Please try again.");
@@ -120,17 +111,10 @@ const MainForm = () => {
   const handleBack = async () => {
     setIsLoading(true);
     try {
-      router.push(`/admin/candidates/add-candidates?id=${candidateId}&step=${activeStep - 1}`);
-
-
-      // Move to the previous step
-      setActiveStep((prevActiveStep) => {
-        const newStep = prevActiveStep - 1;
-  
-        setSnackbarMessage(`Moved to step: ${steps[newStep]}`);
-        setSuccess(true);
-        return newStep;
-      });
+      const previousStep = activeStep - 1;
+      setActiveStep(previousStep);
+      router.push(`/admin/candidates/add-candidates?id=${candidateId}&step=${previousStep}`);
+      fetchStepData(candidateId, previousStep);
     } catch (error) {
       console.error("Failed to save data", error);
       setSnackbarMessage("Failed to save data. Please try again.");
@@ -145,19 +129,14 @@ const MainForm = () => {
     setIsLoading(true);
     try {
       if (stepData.id) {
-        // Update existing candidate data
         await _update(stepEndpoints[activeStep], stepData.id, stepData);
         setSnackbarMessage("Candidate information updated successfully!");
         setSuccess(true);
       } else {
-        // Create new candidate data
         const createdData = await _create(stepEndpoints[activeStep], stepData);
-        // Save the newly created candidate ID
-        
         setSnackbarMessage("Candidate information saved successfully!");
         setSuccess(true);
-        // Update the URL with the new ID
-        router.push(`/admin/candidates/add-candidates?id=${candiadateId}&step=${activeStep}`);
+        router.push(`/admin/candidates/add-candidates?id=${createdData.id}&step=${activeStep}`);
       }
       setSnackbarOpen(true);
     } catch (error) {
