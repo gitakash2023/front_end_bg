@@ -16,6 +16,7 @@ import WorkExperience from "./WorkExperience";
 import FathersDocument from "./FathersDocument";
 import { _create, _update, _getById } from "../../../../utils/apiUtils";
 import { useRouter, useSearchParams } from "next/navigation";
+import Header from "@/common-components/Header";
 
 const steps = [
   "General Information",
@@ -33,8 +34,8 @@ const stepEndpoints = [
   "/candidate-education",
   "/candidate-cibil",
   "/candidate-reference",
-  "/candidate-work-experience",
-  "/fathers-document"
+  "/workingExp",
+  "/fathers-documen"
 ];
 
 const Alert = React.forwardRef(function Alert(props, ref) {
@@ -174,6 +175,8 @@ const MainForm = () => {
   };
 
   return (
+    <>
+    <Header/>
     <div>
       <Stepper activeStep={activeStep} alternativeLabel>
         {steps.map((label) => (
@@ -219,6 +222,7 @@ const MainForm = () => {
         </Alert>
       </Snackbar>
     </div>
+    </>
   );
 };
 
