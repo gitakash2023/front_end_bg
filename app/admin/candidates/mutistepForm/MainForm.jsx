@@ -35,7 +35,7 @@ const stepEndpoints = [
   "/candidate-cibil",
   "/candidate-reference",
   "/workingExp",
-  "/fathers-documen"
+  "//fathers-document"
 ];
 
 const Alert = React.forwardRef(function Alert(props, ref) {
