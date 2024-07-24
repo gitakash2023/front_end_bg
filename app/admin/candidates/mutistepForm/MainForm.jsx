@@ -4,9 +4,12 @@ import Stepper from "@mui/material/Stepper";
 import Step from "@mui/material/Step";
 import StepLabel from "@mui/material/StepLabel";
 import Button from "@mui/material/Button";
-import Snackbar from "@mui/material/Snackbar";
-import MuiAlert from "@mui/material/Alert";
 import CircularProgress from "@mui/material/CircularProgress";
+import Dialog from "@mui/material/Dialog";
+import DialogActions from "@mui/material/DialogActions";
+import DialogContent from "@mui/material/DialogContent";
+import DialogContentText from "@mui/material/DialogContentText";
+import DialogTitle from "@mui/material/DialogTitle";
 import GeneralInformation from "./GeneralInformation";
 import PermanentAddress from "./PermanentAddress";
 import Education from "./Education";
@@ -38,10 +41,6 @@ const stepEndpoints = [
   // "/fathers-document"
 ];
 
-const Alert = React.forwardRef(function Alert(props, ref) {
-  return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
-});
-
 const MainForm = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -54,8 +53,8 @@ const MainForm = () => {
   const [stepData, setStepData] = useState({});
   const [isLoading, setIsLoading] = useState(false);
   const [success, setSuccess] = useState(false);
-  const [snackbarOpen, setSnackbarOpen] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [dialogMessage, setDialogMessage] = useState("");
 
   useEffect(() => {
     if (candidateId) {
@@ -70,15 +69,10 @@ const MainForm = () => {
         let data = await _getById(stepEndpoints[step], candidateId);
         data = data?.length > 0 ? data[0] : {};
         setStepData({ ...data, candidate_id: candidateId });
-        setSnackbarMessage(`Data for step ${steps[step]} loaded successfully.`);
-        setSuccess(true);
       } catch (error) {
         console.error(`Failed to fetch data for step ${step}`, error);
-        setSnackbarMessage(`Failed to fetch data for step ${steps[step]}. Please try again.`);
-        setSuccess(false);
       } finally {
         setIsLoading(false);
-        setSnackbarOpen(true);
       }
     }
   };
@@ -98,14 +92,20 @@ const MainForm = () => {
       }
       const nextStep = activeStep + 1;
       setActiveStep(nextStep);
-      fetchStepData(candidateId, nextStep);
+      if (nextStep < steps.length) {
+        fetchStepData(candidateId, nextStep);
+      } else {
+        setDialogMessage("All steps completed successfully!");
+        setSuccess(true);
+        setDialogOpen(true);
+      }
     } catch (error) {
       console.error("Failed to save data", error);
-      setSnackbarMessage("Failed to save data. Please try again.");
+      setDialogMessage("Failed to save data. Please try again.");
       setSuccess(false);
+      setDialogOpen(true);
     } finally {
       setIsLoading(false);
-      setSnackbarOpen(true);
     }
   };
 
@@ -118,39 +118,16 @@ const MainForm = () => {
       fetchStepData(candidateId, previousStep);
     } catch (error) {
       console.error("Failed to save data", error);
-      setSnackbarMessage("Failed to save data. Please try again.");
-      setSuccess(false);
-    } finally {
-      setIsLoading(false);
-      setSnackbarOpen(true);
-    }
-  };
-
-  const handleSave = async () => {
-    setIsLoading(true);
-    try {
-      if (stepData.id) {
-        await _update(stepEndpoints[activeStep], stepData.id, stepData);
-        setSnackbarMessage("Candidate information updated successfully!");
-        setSuccess(true);
-      } else {
-        const createdData = await _create(stepEndpoints[activeStep], stepData);
-        setSnackbarMessage("Candidate information saved successfully!");
-        setSuccess(true);
-        router.push(`/admin/candidates/add-candidates?id=${createdData.id}&step=${activeStep}`);
-      }
-      setSnackbarOpen(true);
-    } catch (error) {
-      console.error("Failed to save candidate data", error);
-      setSnackbarMessage("Failed to save candidate data. Please try again.");
-      setSuccess(false);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleCloseSnackbar = () => {
-    setSnackbarOpen(false);
+  const handleCloseDialog = () => {
+    setDialogOpen(false);
+    if (success) {
+      router.push("/admin/candidates");
+    }
   };
 
   const getStepContent = (step) => {
@@ -176,52 +153,61 @@ const MainForm = () => {
 
   return (
     <>
-    <Header/>
-    <div>
-      <Stepper activeStep={activeStep} alternativeLabel>
-        {steps.map((label) => (
-          <Step key={label}>
-            <StepLabel>{label}</StepLabel>
-          </Step>
-        ))}
-      </Stepper>
+      <Header />
       <div>
-        {isLoading ? (
-          <div style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
-            <CircularProgress />
-          </div>
-        ) : (
-          <div>
-            {getStepContent(activeStep)}
-            <div style={{ display: "flex", justifyContent: "space-between", marginTop: 20 }}>
-              <Button
-                disabled={activeStep === 0}
-                onClick={handleBack}
-                variant="contained"
-              >
-                Back
-              </Button>
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={activeStep === steps.length - 1 ? handleSave : handleNext}
-              >
-                {activeStep === steps.length - 1 ? "Finish" : "Next"}
-              </Button>
+        <Stepper activeStep={activeStep} alternativeLabel>
+          {steps.map((label) => (
+            <Step key={label}>
+              <StepLabel>{label}</StepLabel>
+            </Step>
+          ))}
+        </Stepper>
+        <div>
+          {isLoading ? (
+            <div style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
+              <CircularProgress />
             </div>
-          </div>
-        )}
+          ) : (
+            <div>
+              {getStepContent(activeStep)}
+              <div style={{ display: "flex", justifyContent: "space-between", marginTop: 20 }}>
+                <Button
+                  disabled={activeStep === 0}
+                  onClick={handleBack}
+                  variant="contained"
+                >
+                  Back
+                </Button>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={activeStep === steps.length - 1 ? handleNext : handleNext}
+                >
+                  {activeStep === steps.length - 1 ? "Finish" : "Next"}
+                </Button>
+              </div>
+            </div>
+          )}
+        </div>
+        <Dialog
+          open={dialogOpen}
+          onClose={handleCloseDialog}
+          aria-labelledby="alert-dialog-title"
+          aria-describedby="alert-dialog-description"
+        >
+          <DialogTitle id="alert-dialog-title">{"Success"}</DialogTitle>
+          <DialogContent>
+            <DialogContentText id="alert-dialog-description">
+              {dialogMessage}
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleCloseDialog} color="primary" autoFocus>
+              OK
+            </Button>
+          </DialogActions>
+        </Dialog>
       </div>
-      <Snackbar
-        open={snackbarOpen}
-        autoHideDuration={6000}
-        onClose={handleCloseSnackbar}
-      >
-        <Alert onClose={handleCloseSnackbar} severity={success ? "success" : "error"}>
-          {snackbarMessage}
-        </Alert>
-      </Snackbar>
-    </div>
     </>
   );
 };

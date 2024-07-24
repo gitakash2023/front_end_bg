@@ -48,11 +48,11 @@ const CIBILInformation = ({ formData, setFormData }) => {
 
   const fields = [
     { name: "pan_number", label: "PAN Number", type: "text" },
-    { name: "pan_card", label: "Upload PAN Card", type: "file" },
+    // { name: "pan_card", label: "Upload PAN Card", type: "file" },
     { name: "cibil_score", label: "CIBIL Score", type: "text" },
-    { name: "cibil_report", label: "Upload CIBIL Report", type: "file" },
+    // { name: "cibil_report", label: "Upload CIBIL Report", type: "file" },
     { name: "aadhar_number", label: "Aadhar Number", type: "text" },
-    { name: "aadhar_card", label: "Upload Aadhar Card", type: "file" }, 
+    // { name: "aadhar_card", label: "Upload Aadhar Card", type: "file" }, 
   ];
 
   return (

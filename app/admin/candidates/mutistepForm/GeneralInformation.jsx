@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { TextField, Autocomplete, MenuItem } from "@mui/material";
+import { TextField, Autocomplete } from "@mui/material";
 import { _getAll, _getById } from "../../../../utils/apiUtils";
 import { useSearchParams } from "next/navigation";
 import DateFormate from "../../../../common-components/DateFormate";
@@ -11,8 +11,8 @@ export const fields = [
     label: "E-mail Notification to candidate",
     type: "select",
     options: [
-      { label: "Yes", value: true },
-      { label: "No", value: false },
+      { label: "Yes", value: "Yes" },
+      { label: "No", value: "No" },
     ],
   },
   {
@@ -20,8 +20,8 @@ export const fields = [
     label: "E-mail Notification to client",
     type: "select",
     options: [
-      { label: "Yes", value: true },
-      { label: "No", value: false },
+      { label: "Yes", value: "Yes" },
+      { label: "No", value: "No" },
     ],
   },
   {
@@ -29,8 +29,8 @@ export const fields = [
     label: "E-mail Notification to admin",
     type: "select",
     options: [
-      { label: "Yes", value: true },
-      { label: "No", value: false },
+      { label: "Yes", value: "Yes" },
+      { label: "No", value: "No" },
     ],
   },
   {
@@ -98,10 +98,6 @@ const GeneralInformation = ({ formData, setFormData }) => {
             setFormData((prevData) => ({
               ...prevData,
               ...candidateData,
-              notify_candidate: candidateData.notify_candidate ? true : false,
-              notify_client: candidateData.notify_client ? true : false,
-              notify_admin: candidateData.notify_admin ? true : false,
-              form_filled_by: candidateData.form_filled_by || "Candidate",
             }));
             setProcessList(candidateData.process_list || []);
           }
@@ -119,9 +115,18 @@ const GeneralInformation = ({ formData, setFormData }) => {
       setFormData((prevData) => ({
         ...prevData,
         client_id: newValue.id,
+        process: "", // Reset process when company changes
         process_list: newValue.process_list,
       }));
       setProcessList(newValue.process_list);
+    } else {
+      setFormData((prevData) => ({
+        ...prevData,
+        client_id: "",
+        process: "",
+        process_list: [],
+      }));
+      setProcessList([]);
     }
   };
 

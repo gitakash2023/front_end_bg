@@ -1,9 +1,8 @@
 "use client";
 import React, { useState } from "react";
-import { TextField, MenuItem, Checkbox, Button, FormControlLabel } from "@mui/material";
+import { TextField, MenuItem, Button } from "@mui/material";
 import { useSearchParams } from "next/navigation";
 import DateFormate from "../../../../common-components/DateFormate";
-
 
 const fields = [
   { name: "country_id", label: "Country", type: "text" },
@@ -18,18 +17,8 @@ const fields = [
 ];
 
 const PermanentAddress = ({ formData, setFormData }) => {
-  const [isSameAddress, setIsSameAddress] = useState(false);
-  const [showCurrentAddressForm, setShowCurrentAddressForm] = useState(false);
   const searchParams = useSearchParams();
   const id = searchParams.get("id");
-
-  const handleCheckboxChange = (event) => {
-    setIsSameAddress(event.target.checked);
-  };
-
-  const handleAddAddressClick = () => {
-    setShowCurrentAddressForm(true);
-  };
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -85,66 +74,6 @@ const PermanentAddress = ({ formData, setFormData }) => {
           </div>
         ))}
       </div>
-
-      {!showCurrentAddressForm && (
-        <Button variant="contained" color="primary" onClick={handleAddAddressClick}>
-          Add Current Address
-        </Button>
-      )}
-
-      {showCurrentAddressForm && (
-        <div style={{ marginTop: '16px' }}>
-          <FormControlLabel
-            control={<Checkbox checked={isSameAddress} onChange={handleCheckboxChange} />}
-            label="Same as permanent address"
-          />
-          <h3>Current Address</h3>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px' }}>
-            {fields.map((field, index) => (
-              <div key={index} style={{ flex: '1 1 calc(25% - 16px)', minWidth: '200px' }}>
-                {field.type === "select" ? (
-                  <TextField
-                    select
-                    name={`current_${field.name}`}
-                    value={formData[`current_${field.name}`] || ''}
-                    onChange={handleChange}
-                    label={field.label}
-                    variant="outlined"
-                    fullWidth
-                    margin="normal"
-                    InputLabelProps={{ shrink: true }}
-                  >
-                    {field.options.map((option, idx) => (
-                      <MenuItem key={idx} value={option.toLowerCase()}>
-                        {option}
-                      </MenuItem>
-                    ))}
-                  </TextField>
-                ) : field.type === "date" ? (
-                  <DateFormate
-                    name={`current_${field.name}`}
-                    label={field.label}
-                    value={formData[`current_${field.name}`]}
-                    onChange={handleChange}
-                  />
-                ) : (
-                  <TextField
-                    type={field.type}
-                    name={`current_${field.name}`}
-                    value={formData[`current_${field.name}`] || ''}
-                    onChange={handleChange}
-                    label={field.label}
-                    variant="outlined"
-                    fullWidth
-                    margin="normal"
-                    InputLabelProps={{ shrink: true }}
-                  />
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
     </div>
   );
 };
