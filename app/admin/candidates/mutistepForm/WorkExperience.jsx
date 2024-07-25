@@ -49,10 +49,10 @@ const WorkExperience = ({ formData, setFormData }) => {
     { name: "from", label: "From", type: "date" },
     { name: "to", label: "To", type: "date" },
     { name: "salary", label: "Salary in CTC(LPA)", type: "text" },
-    // { name: "salarySlip", label: "Upload Salary Slip", type: "file" },
+    { name: "salarySlip", label: "Upload Salary Slip", type: "file" },
     { name: "reasonForLeaving", label: "Reason for Leaving", type: "text" },
-    // { name: "relievingLetter", label: "Upload Relieving Letter", type: "file" },
-    // { name: "experienceLetter", label: "Upload Experience Letter", type: "file" },
+    { name: "relievingLetter", label: "Upload Relieving Letter", type: "file" },
+    { name: "experienceLetter", label: "Upload Experience Letter", type: "file" },
   ];
 
   return (

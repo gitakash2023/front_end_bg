@@ -28,7 +28,6 @@ const steps = [
   "CIBIL Information",
   "Candidate Reference",
   "Work Experience",
-  // "Father's Document"
 ];
 
 const stepEndpoints = [
@@ -38,7 +37,6 @@ const stepEndpoints = [
   "/candidate-cibil",
   "/candidate-reference",
   "/workingExp",
-  // "/fathers-document"
 ];
 
 const MainForm = () => {
@@ -68,7 +66,13 @@ const MainForm = () => {
         setIsLoading(true);
         let data = await _getById(stepEndpoints[step], candidateId);
         data = data?.length > 0 ? data[0] : {};
+        
+        // Set the fetched data to both stepData and formData
         setStepData({ ...data, candidate_id: candidateId });
+        setFormData((prevData) => ({
+          ...prevData,
+          ...data,
+        }));
       } catch (error) {
         console.error(`Failed to fetch data for step ${step}`, error);
       } finally {
@@ -181,7 +185,7 @@ const MainForm = () => {
                 <Button
                   variant="contained"
                   color="primary"
-                  onClick={activeStep === steps.length - 1 ? handleNext : handleNext}
+                  onClick={handleNext}
                 >
                   {activeStep === steps.length - 1 ? "Finish" : "Next"}
                 </Button>

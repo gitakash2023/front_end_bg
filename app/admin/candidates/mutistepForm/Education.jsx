@@ -60,7 +60,7 @@ const Education = ({ formData, setFormData }) => {
     { name: "gpa_percentage", label: "GPA/Percentage", type: "text" },
     { name: "roll_number", label: "Roll Number", type: "text" },
     { name: "certificate_number", label: "Highest Education Certificate Number", type: "text" },
-    // { name: "certificate", label: "Upload Highest Certificate", type: "file" },
+    { name: "certificate", label: "Upload Highest Certificate", type: "file" },
   ];
 
   return (

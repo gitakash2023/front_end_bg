@@ -1,5 +1,7 @@
 import React, { useRef } from 'react';
 import TextField from '@mui/material/TextField';
+import Button from '@mui/material/Button';
+import Typography from '@mui/material/Typography';
 
 const CIBILInformation = ({ formData, setFormData }) => {
   const fileInputRef = useRef(null);
@@ -19,10 +21,12 @@ const CIBILInformation = ({ formData, setFormData }) => {
       try {
         const file = files[0];
         const fileBlob = await fileToBlob(file);
-        console.log("File Blob:", fileBlob);
         setFormData((prevData) => ({
           ...prevData,
-          [name]: fileBlob,
+          [name]: {
+            blob: fileBlob,
+            name: file.name,
+          },
         }));
       } catch (error) {
         console.error("Error selecting file:", error);
@@ -48,11 +52,11 @@ const CIBILInformation = ({ formData, setFormData }) => {
 
   const fields = [
     { name: "pan_number", label: "PAN Number", type: "text" },
-    // { name: "pan_card", label: "Upload PAN Card", type: "file" },
+    { name: "pan_card", label: "Upload PAN Card", type: "file" },
     { name: "cibil_score", label: "CIBIL Score", type: "text" },
-    // { name: "cibil_report", label: "Upload CIBIL Report", type: "file" },
+    { name: "cibil_report", label: "Upload CIBIL Report", type: "file" },
     { name: "aadhar_number", label: "Aadhar Number", type: "text" },
-    // { name: "aadhar_card", label: "Upload Aadhar Card", type: "file" }, 
+    { name: "aadhar_card", label: "Upload Aadhar Card", type: "file" },
   ];
 
   return (
@@ -60,17 +64,36 @@ const CIBILInformation = ({ formData, setFormData }) => {
       {fields.map((field, index) => (
         <div key={index} style={{ flex: '1 1 calc(25% - 16px)', minWidth: '200px' }}>
           {field.type === "file" ? (
-            <TextField
-              type="file"
-              name={field.name}
-              onChange={handleFileChange}
-              label={field.label}
-              variant="outlined"
-              fullWidth
-              margin="normal"
-              InputLabelProps={{ shrink: true }}
-              InputProps={{ inputProps: { accept: ".pdf, .png, .jpg, .jpeg" }, ref: fileInputRef }}
-            />
+            <div>
+              <TextField
+                type="file"
+                name={field.name}
+                onChange={handleFileChange}
+                label={field.label}
+                variant="outlined"
+                fullWidth
+                margin="normal"
+                InputLabelProps={{ shrink: true }}
+                InputProps={{ inputProps: { accept: ".pdf, .png, .jpg, .jpeg" }, ref: fileInputRef }}
+              />
+              {formData[field.name] && formData[field.name].name && (
+                <div style={{ marginTop: '8px' }}>
+                  <Typography variant="body2">
+                    <strong>Uploaded File:</strong> {formData[field.name].name}
+                  </Typography>
+                  <Button
+                    variant="outlined"
+                    color="primary"
+                    href={URL.createObjectURL(formData[field.name].blob)}
+                    download={formData[field.name].name}
+                    target="_blank"
+                    style={{ marginTop: '4px' }}
+                  >
+                    Download
+                  </Button>
+                </div>
+              )}
+            </div>
           ) : (
             <TextField
               type={field.type}
@@ -88,6 +111,6 @@ const CIBILInformation = ({ formData, setFormData }) => {
       ))}
     </div>
   );
-}
+};
 
 export default CIBILInformation;
