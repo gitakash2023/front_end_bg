@@ -95,9 +95,13 @@ const GeneralInformation = ({ formData, setFormData }) => {
         if (id) {
           const candidateData = await _getById("/candidate", id);
           if (candidateData) {
+            const selectedCompany = companiesData.find(
+              (company) => company.name === candidateData.client_id
+            );
             setFormData((prevData) => ({
               ...prevData,
               ...candidateData,
+              client_id: selectedCompany ? selectedCompany.name : "",
             }));
             setProcessList(candidateData.process_list || []);
           }
@@ -114,7 +118,7 @@ const GeneralInformation = ({ formData, setFormData }) => {
     if (newValue) {
       setFormData((prevData) => ({
         ...prevData,
-        client_id: newValue.id,
+        client_id: newValue.name,
         process: "", // Reset process when company changes
         process_list: newValue.process_list,
       }));
@@ -155,7 +159,7 @@ const GeneralInformation = ({ formData, setFormData }) => {
           {field.name === "client_id" ? (
             <Autocomplete
               value={
-                companies.find((company) => company.id === formData.client_id) ||
+                companies.find((company) => company.name === formData.client_id) ||
                 null
               }
               onChange={handleCompanyChange}
