@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { TextField, MenuItem, FormHelperText, Button } from "@mui/material";
 import DateFormate from "../../../../common-components/DateFormate";
+import { useRouter, useSearchParams } from "next/navigation";
 
 const fields = [
   { name: "country_id", label: "Country", type: "text" },
@@ -18,6 +19,7 @@ const fields = [
 
 const AddressForm = ({ address, onChange, index, heading }) => {
   const [fileError, setFileError] = useState(null);
+
 
   useEffect(() => {
     if (address.address_proof_file) {
@@ -126,8 +128,9 @@ const AddressForm = ({ address, onChange, index, heading }) => {
 };
 
 
-const AddressContainer = ({ formData, setFormData }) => {
+const AddressContainer = ({ formData, setFormData, candidate_id }) => {
   const [activeAddressIndex, setActiveAddressIndex] = useState(0);
+ 
 
   useEffect(() => {
     if (formData.length === 0) {
@@ -144,7 +147,8 @@ const AddressContainer = ({ formData, setFormData }) => {
           full_address: "",
           address_proof_file: null,
           address_proof_file_name: "",
-          address_type: "current"
+          address_type: "current",
+          candidate_id
         },
         {
           country_id: "",
@@ -158,7 +162,8 @@ const AddressContainer = ({ formData, setFormData }) => {
           full_address: "",
           address_proof_file: null,
           address_proof_file_name: "",
-          address_type: "permanent"
+          address_type: "permanent",
+          candidate_id
         },
         {
           country_id: "",
@@ -172,7 +177,8 @@ const AddressContainer = ({ formData, setFormData }) => {
           full_address: "",
           address_proof_file: null,
           address_proof_file_name: "",
-          address_type: "previous"
+          address_type: "previous",
+          candidate_id
         }
       ]);
     }

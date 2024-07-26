@@ -134,7 +134,7 @@ const MainForm = () => {
       case 0:
         return <GeneralInformation formData={stepData} setFormData={setStepData} />;
       case 1:
-        return <AddressContainer formData={Array.isArray(stepData) ? stepData : []} setFormData={setStepData} />;
+        return <AddressContainer formData={Array.isArray(stepData) ? stepData : []} setFormData={setStepData}  candidate_id={candidateId}/>;
       case 2:
         return <Education formData={stepData[0]} setFormData={setStepData} />;
       case 3:
