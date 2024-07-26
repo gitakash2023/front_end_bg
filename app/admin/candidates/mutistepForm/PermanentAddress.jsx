@@ -1,7 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { TextField, MenuItem, FormHelperText, Button } from "@mui/material";
-import { useSearchParams } from "next/navigation";
 import DateFormate from "../../../../common-components/DateFormate";
 
 const fields = [
@@ -17,19 +16,14 @@ const fields = [
   { name: "address_proof_file", label: "Upload Address Proof", type: "file" }
 ];
 
-const PermanentAddress = ({ formData, setFormData }) => {
-  const searchParams = useSearchParams();
-  const id = searchParams.get("id");
+const AddressForm = ({ address, onChange, index, heading }) => {
   const [fileError, setFileError] = useState(null);
 
   useEffect(() => {
-    if (formData.address_proof_file) {
-      setFormData((prevData) => ({
-        ...prevData,
-        address_proof_file_name: formData.address_proof_file.name || "Uploaded file"
-      }));
+    if (address.address_proof_file) {
+      onChange(index, { ...address, address_proof_file_name: address.address_proof_file.name || "Uploaded file" });
     }
-  }, [formData.address_proof_file, setFormData]);
+  }, [address.address_proof_file, index, onChange]);
 
   const handleChange = (event) => {
     const { name, value, files } = event.target;
@@ -48,22 +42,17 @@ const PermanentAddress = ({ formData, setFormData }) => {
       reader.readAsArrayBuffer(file);
       reader.onloadend = () => {
         const blob = new Blob([reader.result], { type: file.type });
-        setFormData((prevData) => ({
-          ...prevData,
-          [name]: blob,
-          address_proof_file_name: file.name
-        }));
+        onChange(index, { ...address, [name]: blob, address_proof_file_name: file.name });
       };
     } else {
-      setFormData((prevData) => ({
-        ...prevData,
-        [name]: value
-      }));
+      onChange(index, { ...address, [name]: value });
     }
   };
 
   return (
-    <div>
+
+    <div className="my-5">
+      <h2>{heading} address</h2>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px' }}>
         {fields.map((field, index) => (
           <div key={index} style={{ flex: '1 1 calc(50% - 16px)', minWidth: '200px' }}>
@@ -71,7 +60,7 @@ const PermanentAddress = ({ formData, setFormData }) => {
               <TextField
                 select
                 name={field.name}
-                value={formData[field.name] || ''}
+                value={address[field.name] || ''}
                 onChange={handleChange}
                 label={field.label}
                 variant="outlined"
@@ -89,14 +78,14 @@ const PermanentAddress = ({ formData, setFormData }) => {
               <DateFormate
                 name={field.name}
                 label={field.label}
-                value={formData[field.name]}
+                value={address[field.name]}
                 onChange={handleChange}
               />
             ) : field.type === "file" ? (
               <div>
-                {formData.address_proof_file_name && (
+                {address.address_proof_file_name && (
                   <div style={{ marginBottom: '8px' }}>
-                    <strong>Uploaded file:</strong> {formData.address_proof_file_name}
+                    <strong>Uploaded file:</strong> {address.address_proof_file_name}
                   </div>
                 )}
                 <TextField
@@ -120,7 +109,7 @@ const PermanentAddress = ({ formData, setFormData }) => {
               <TextField
                 type={field.type}
                 name={field.name}
-                value={formData[field.name] || ''}
+                value={address[field.name] || ''}
                 onChange={handleChange}
                 label={field.label}
                 variant="outlined"
@@ -136,4 +125,78 @@ const PermanentAddress = ({ formData, setFormData }) => {
   );
 };
 
-export default PermanentAddress;
+
+const AddressContainer = ({ formData, setFormData }) => {
+  const [activeAddressIndex, setActiveAddressIndex] = useState(0);
+
+  useEffect(() => {
+    if (formData.length === 0) {
+      setFormData([
+        {
+          country_id: "",
+          state_id: "",
+          district_id: "",
+          city_id: "",
+          postal_id: "",
+          house_type: "",
+          stay_from_date: "",
+          stay_till_date: "",
+          full_address: "",
+          address_proof_file: null,
+          address_proof_file_name: "",
+          address_type: "current"
+        },
+        {
+          country_id: "",
+          state_id: "",
+          district_id: "",
+          city_id: "",
+          postal_id: "",
+          house_type: "",
+          stay_from_date: "",
+          stay_till_date: "",
+          full_address: "",
+          address_proof_file: null,
+          address_proof_file_name: "",
+          address_type: "permanent"
+        },
+        {
+          country_id: "",
+          state_id: "",
+          district_id: "",
+          city_id: "",
+          postal_id: "",
+          house_type: "",
+          stay_from_date: "",
+          stay_till_date: "",
+          full_address: "",
+          address_proof_file: null,
+          address_proof_file_name: "",
+          address_type: "previous"
+        }
+      ]);
+    }
+  }, [formData, setFormData]);
+
+  const handleAddressChange = (index, updatedAddress) => {
+    setFormData(formData.map((address, idx) =>
+      idx === index ? updatedAddress : address
+    ));
+  };
+
+  return (
+    <div>
+      {formData.map((address, index) => (
+        <AddressForm
+          key={index}
+          address={address}
+          onChange={handleAddressChange}
+          index={index}
+          heading={address.address_type}
+        />
+      ))}
+    </div>
+  );
+};
+
+export default AddressContainer;

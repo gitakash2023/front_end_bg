@@ -11,7 +11,7 @@ import DialogContent from "@mui/material/DialogContent";
 import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
 import GeneralInformation from "./GeneralInformation";
-import PermanentAddress from "./PermanentAddress";
+import AddressContainer from "./PermanentAddress";
 import Education from "./Education";
 import CIBILInformation from "./CIBILInformation";
 import OtherReferenceInformation from "./OtherReferenceInformation";
@@ -47,8 +47,7 @@ const MainForm = () => {
 
   const [candidateId, setCandidateId] = useState(candidate_id);
   const [activeStep, setActiveStep] = useState(stepParam ? parseInt(stepParam) : 0);
-  const [formData, setFormData] = useState({});
-  const [stepData, setStepData] = useState({});
+  const [stepData, setStepData] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -65,14 +64,8 @@ const MainForm = () => {
       try {
         setIsLoading(true);
         let data = await _getById(stepEndpoints[step], candidateId);
-        data = data?.length > 0 ? data[0] : {};
-        
-        // Set the fetched data to both stepData and formData
-        setStepData({ ...data, candidate_id: candidateId });
-        setFormData((prevData) => ({
-          ...prevData,
-          ...data,
-        }));
+        data = data || [];
+        setStepData(data);
       } catch (error) {
         console.error(`Failed to fetch data for step ${step}`, error);
       } finally {
@@ -83,21 +76,23 @@ const MainForm = () => {
 
   const handleNext = async () => {
     setIsLoading(true);
+    let newlyCreatedCandidateId = null;
     try {
-      if (stepData.id) {
-        await _update(stepEndpoints[activeStep], stepData.id, stepData);
+      if (stepData.id || (Array.isArray(stepData) && stepData?.every(data => data.id))) {
+        await _update(stepEndpoints[activeStep], stepData.id || stepData[0].id, stepData);
       } else {
         const createdData = await _create(stepEndpoints[activeStep], stepData);
         if (activeStep === 0) {
           setCandidateId(createdData.id);
+          newlyCreatedCandidateId = createdData.id;
         }
-        setFormData({ ...formData, candidate_id: createdData.id });
-        router.push(`/admin/candidates/add-candidates?id=${createdData.id}&step=${activeStep + 1}`);
+        router.push(`/admin/candidates/add-candidates?id=${newlyCreatedCandidateId || candidateId}&step=${activeStep + 1}`);
       }
+      setStepData([]);
       const nextStep = activeStep + 1;
       setActiveStep(nextStep);
       if (nextStep < steps.length) {
-        fetchStepData(candidateId, nextStep);
+        fetchStepData(newlyCreatedCandidateId || candidateId, nextStep);
       } else {
         setDialogMessage("All steps completed successfully!");
         setSuccess(true);
@@ -139,17 +134,17 @@ const MainForm = () => {
       case 0:
         return <GeneralInformation formData={stepData} setFormData={setStepData} />;
       case 1:
-        return <PermanentAddress formData={stepData} setFormData={setStepData} />;
+        return <AddressContainer formData={Array.isArray(stepData) ? stepData : []} setFormData={setStepData} />;
       case 2:
-        return <Education formData={stepData} setFormData={setStepData} />;
+        return <Education formData={stepData[0]} setFormData={setStepData} />;
       case 3:
-        return <CIBILInformation formData={stepData} setFormData={setStepData} />;
+        return <CIBILInformation formData={stepData[0]} setFormData={setStepData} />;
       case 4:
-        return <OtherReferenceInformation formData={stepData} setFormData={setStepData} />;
+        return <OtherReferenceInformation formData={stepData[0]} setFormData={setStepData} />;
       case 5:
-        return <WorkExperience formData={stepData} setFormData={setStepData} />;
+        return <WorkExperience formData={stepData[0]} setFormData={setStepData} />;
       case 6:
-        return <FathersDocument formData={stepData} setFormData={setStepData} />;
+        return <FathersDocument formData={stepData[0]} setFormData={setStepData} />;
       default:
         return "Unknown step";
     }
