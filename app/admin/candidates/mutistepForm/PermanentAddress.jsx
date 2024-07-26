@@ -1,6 +1,6 @@
 "use client";
-import React, { useState } from "react";
-import { TextField, MenuItem, CircularProgress, FormHelperText } from "@mui/material";
+import React, { useState, useEffect } from "react";
+import { TextField, MenuItem, FormHelperText, Button } from "@mui/material";
 import { useSearchParams } from "next/navigation";
 import DateFormate from "../../../../common-components/DateFormate";
 
@@ -22,6 +22,15 @@ const PermanentAddress = ({ formData, setFormData }) => {
   const id = searchParams.get("id");
   const [fileError, setFileError] = useState(null);
 
+  useEffect(() => {
+    if (formData.address_proof_file) {
+      setFormData((prevData) => ({
+        ...prevData,
+        address_proof_file_name: formData.address_proof_file.name || "Uploaded file"
+      }));
+    }
+  }, [formData.address_proof_file, setFormData]);
+
   const handleChange = (event) => {
     const { name, value, files } = event.target;
     if (files) {
@@ -41,7 +50,8 @@ const PermanentAddress = ({ formData, setFormData }) => {
         const blob = new Blob([reader.result], { type: file.type });
         setFormData((prevData) => ({
           ...prevData,
-          [name]: blob
+          [name]: blob,
+          address_proof_file_name: file.name
         }));
       };
     } else {
@@ -84,6 +94,11 @@ const PermanentAddress = ({ formData, setFormData }) => {
               />
             ) : field.type === "file" ? (
               <div>
+                {formData.address_proof_file_name && (
+                  <div style={{ marginBottom: '8px' }}>
+                    <strong>Uploaded file:</strong> {formData.address_proof_file_name}
+                  </div>
+                )}
                 <TextField
                   type="file"
                   name={field.name}

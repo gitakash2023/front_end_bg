@@ -42,7 +42,7 @@ const LoginForm = () => {
       if (user_role === 3) {
         router.push(`/admin/candidates/add-candidates?id=${id}`);
       } else if (user_role === 2) {
-        router.push("/admin/companies");
+        router.push("/client/client-dashboard");
       } else {
         router.push("/admin/admin-dashboard");
       }

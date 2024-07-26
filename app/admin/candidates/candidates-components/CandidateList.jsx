@@ -1,4 +1,5 @@
-"use client"
+"use client";
+
 import React, { useState, useEffect } from 'react';
 import { DataGrid } from '@mui/x-data-grid';
 import { IconButton, Dialog, DialogTitle, DialogContent, DialogActions, Button, Snackbar, CircularProgress } from '@mui/material';
@@ -18,7 +19,6 @@ export default function CandidateList() {
         isErrorDialogOpen: false,
     });
     const [errorMessage, setErrorMessage] = useState('');
-    const [column, setColumn] = useState(columns);
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false); 
 
@@ -29,8 +29,26 @@ export default function CandidateList() {
     const fetchData = async () => {
         try {
             const data = await _getAll('/candidate');
-            setRows(data);
-            setFilteredRows(data); 
+            const formattedData = data.map(item => ({
+                id: item.id,
+                name: item.name,
+                mobile_no: item.mobile_no,
+                email_id: item.email_id,
+                father_name: item.father_name,
+                gender: item.gender,
+                dob: item.dob,
+                postal_id: item.CandidteAddresses[0]?.postal_id || 'N/A',
+                full_address: item.CandidteAddresses[0]?.full_address || 'N/A',
+                highest_qualify: item.CandidteEductions[0]?.highest_qualify || 'N/A',
+                certificate_number: item.CandidteEductions[0]?.certificate_number || 'N/A',
+                pan_number: item.CandidteCibils[0]?.pan_number || 'N/A',
+                aadhar_number: item.CandidteCibils[0]?.aadhar_number || 'N/A',
+                ref_email: item.CandidteReferences[0]?.ref_email || 'N/A',
+                companyName: item.WorkExperiences[0]?.companyName || 'N/A',
+                companyEmail: item.WorkExperiences[0]?.companyEmail || 'N/A'
+            }));
+            setRows(formattedData);
+            setFilteredRows(formattedData); 
         } catch (error) {
             console.error('Failed to fetch data', error);
             setErrorMessage('Failed to fetch data. Please try again later.');
@@ -107,7 +125,7 @@ export default function CandidateList() {
         ),
     };
 
-    const updatedColumns = [...column, actionsColumn];
+    const updatedColumns = [...columns, actionsColumn];
 
     return (
         <>
