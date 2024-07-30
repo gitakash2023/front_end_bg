@@ -24,9 +24,9 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 
 const steps = [
   "General Information",
-  "Permanent Address",
-  "Education",
+  "Permanent Address", 
   "CIBIL Information",
+  "Education",
   "Work Experience",
   "Candidate Reference",
 ];
@@ -34,8 +34,8 @@ const steps = [
 const stepEndpoints = [
   "/candidate",
   "/candidate-address",
-  "/candidate-education",
   "/candidate-cibil",
+   "/candidate-education",
   "/workingExp",
   "/candidate-reference",
 ];

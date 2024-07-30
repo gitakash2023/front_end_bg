@@ -139,7 +139,7 @@ const WorkExperience = ({ formData, setFormData ,candidate_id}) => {
           relievingLetter_name: '',
           experienceLetter: null,
           experienceLetter_name: '',
-          work_type: "current",
+          experience_type: "current",
         },
         {
           candidate_id: '',
@@ -158,7 +158,7 @@ const WorkExperience = ({ formData, setFormData ,candidate_id}) => {
           relievingLetter_name: '',
           experienceLetter: null,
           experienceLetter_name: '',
-          work_type: "previous",
+          experience_type: "previous",
         },
         {
           candidate_id: '',
@@ -177,7 +177,7 @@ const WorkExperience = ({ formData, setFormData ,candidate_id}) => {
           relievingLetter_name: '',
           experienceLetter: null,
           experienceLetter_name: '',
-          work_type: "other",
+          experience_type: "other",
         }
       ]);
     }
@@ -195,7 +195,7 @@ const WorkExperience = ({ formData, setFormData ,candidate_id}) => {
           workExperience={workExperience}
           onChange={handleWorkExperienceChange}
           index={index}
-          heading={workExperience.work_type}
+          heading={workExperience.experience_type}
         />
       ))}
     </div>
