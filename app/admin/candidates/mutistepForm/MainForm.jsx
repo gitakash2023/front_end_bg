@@ -16,18 +16,19 @@ import Education from "./Education";
 import CIBILInformation from "./CIBILInformation";
 import OtherReferenceInformation from "./OtherReferenceInformation";
 import WorkExperience from "./WorkExperience";
-import FathersDocument from "./FathersDocument";
 import { _create, _update, _getById } from "../../../../utils/apiUtils";
 import { useRouter, useSearchParams } from "next/navigation";
 import Header from "@/common-components/Header";
+import CustomButton from "@/common-components/CustomButton"; 
+import ArrowBackIcon from '@mui/icons-material/ArrowBack'; 
 
 const steps = [
   "General Information",
   "Permanent Address",
   "Education",
   "CIBIL Information",
-  "Candidate Reference",
   "Work Experience",
+  "Candidate Reference",
 ];
 
 const stepEndpoints = [
@@ -35,8 +36,8 @@ const stepEndpoints = [
   "/candidate-address",
   "/candidate-education",
   "/candidate-cibil",
-  "/candidate-reference",
   "/workingExp",
+  "/candidate-reference",
 ];
 
 const MainForm = () => {
@@ -63,7 +64,9 @@ const MainForm = () => {
     if (candidateId && step >= 0 && step < stepEndpoints.length) {
       try {
         setIsLoading(true);
+        console.log(`Fetching data for step ${step} with candidateId ${candidateId}`);
         let data = await _getById(stepEndpoints[step], candidateId);
+        console.log(`Data fetched for step ${step}:`, data);
         data = data || [];
         setStepData(data);
       } catch (error) {
@@ -77,17 +80,23 @@ const MainForm = () => {
   const handleNext = async () => {
     setIsLoading(true);
     let newlyCreatedCandidateId = null;
+  
     try {
-      if (stepData.id || (Array.isArray(stepData) && stepData?.every(data => data.id))) {
+      // Check if we need to create or update data
+      if (stepData && (stepData.id || (Array.isArray(stepData) && stepData.every(data => data.id)))) {
+        console.log(`Updating data for step ${activeStep}`);
         await _update(stepEndpoints[activeStep], stepData.id || stepData[0].id, stepData);
-      } else {
+      } else if (stepData) {
+        console.log(`Creating new data for step ${activeStep}`);
         const createdData = await _create(stepEndpoints[activeStep], stepData);
+        console.log(`Data created:`, createdData);
         if (activeStep === 0) {
           setCandidateId(createdData.id);
           newlyCreatedCandidateId = createdData.id;
         }
         router.push(`/admin/candidates/add-candidates?id=${newlyCreatedCandidateId || candidateId}&step=${activeStep + 1}`);
       }
+      // Reset data and move to the next step
       setStepData([]);
       const nextStep = activeStep + 1;
       setActiveStep(nextStep);
@@ -107,6 +116,7 @@ const MainForm = () => {
       setIsLoading(false);
     }
   };
+  
 
   const handleBack = async () => {
     setIsLoading(true);
@@ -116,7 +126,7 @@ const MainForm = () => {
       router.push(`/admin/candidates/add-candidates?id=${candidateId}&step=${previousStep}`);
       fetchStepData(candidateId, previousStep);
     } catch (error) {
-      console.error("Failed to save data", error);
+      console.error("Failed to go back", error);
     } finally {
       setIsLoading(false);
     }
@@ -129,22 +139,27 @@ const MainForm = () => {
     }
   };
 
+  const handleGoToLastStep = () => {
+    const lastStep = steps.length - 1;
+    setActiveStep(lastStep);
+    router.push(`/admin/candidates/add-candidates?id=${candidateId}&step=${lastStep}`);
+    fetchStepData(candidateId, lastStep);
+  };
+
   const getStepContent = (step) => {
     switch (step) {
       case 0:
         return <GeneralInformation formData={stepData} setFormData={setStepData} />;
       case 1:
-        return <AddressContainer formData={Array.isArray(stepData) ? stepData : []} setFormData={setStepData}  candidate_id={candidateId}/>;
+        return <AddressContainer formData={stepData} setFormData={setStepData} candidate_id={candidateId} />;
       case 2:
-        return <Education formData={stepData[0]} setFormData={setStepData} />;
+        return <Education formData={stepData} setFormData={setStepData} candidate_id={candidateId} />;
       case 3:
-        return <CIBILInformation formData={stepData[0]} setFormData={setStepData} />;
+        return <CIBILInformation formData={stepData} setFormData={setStepData} />;
       case 4:
-        return <OtherReferenceInformation formData={stepData[0]} setFormData={setStepData} />;
+        return <WorkExperience formData={stepData} setFormData={setStepData} candidate_id={candidateId} />;
       case 5:
-        return <WorkExperience formData={stepData[0]} setFormData={setStepData} />;
-      case 6:
-        return <FathersDocument formData={stepData[0]} setFormData={setStepData} />;
+        return <OtherReferenceInformation formData={stepData} setFormData={setStepData} />;
       default:
         return "Unknown step";
     }
@@ -154,6 +169,11 @@ const MainForm = () => {
     <>
       <Header />
       <div>
+        <CustomButton 
+          text="Back" 
+          icon={<ArrowBackIcon />} 
+          onClick={handleGoToLastStep} 
+        />
         <Stepper activeStep={activeStep} alternativeLabel>
           {steps.map((label) => (
             <Step key={label}>
@@ -167,41 +187,32 @@ const MainForm = () => {
               <CircularProgress />
             </div>
           ) : (
-            <div>
-              {getStepContent(activeStep)}
-              <div style={{ display: "flex", justifyContent: "space-between", marginTop: 20 }}>
-                <Button
-                  disabled={activeStep === 0}
-                  onClick={handleBack}
-                  variant="contained"
-                >
-                  Back
-                </Button>
-                <Button
-                  variant="contained"
-                  color="primary"
-                  onClick={handleNext}
-                >
-                  {activeStep === steps.length - 1 ? "Finish" : "Next"}
-                </Button>
-              </div>
-            </div>
+            getStepContent(activeStep)
           )}
+          <div>
+            <Button
+              disabled={activeStep === 0 || isLoading}
+              onClick={handleBack}
+              variant="contained"
+            >
+              Back
+            </Button>
+            <Button
+              disabled={isLoading}
+              onClick={handleNext}
+              variant="contained"
+            >
+              {activeStep === steps.length - 1 ? "Finish" : "Next"}
+            </Button>
+          </div>
         </div>
-        <Dialog
-          open={dialogOpen}
-          onClose={handleCloseDialog}
-          aria-labelledby="alert-dialog-title"
-          aria-describedby="alert-dialog-description"
-        >
-          <DialogTitle id="alert-dialog-title">{"Success"}</DialogTitle>
+        <Dialog open={dialogOpen} onClose={handleCloseDialog}>
+          <DialogTitle>{success ? "Success" : "Error"}</DialogTitle>
           <DialogContent>
-            <DialogContentText id="alert-dialog-description">
-              {dialogMessage}
-            </DialogContentText>
+            <DialogContentText>{dialogMessage}</DialogContentText>
           </DialogContent>
           <DialogActions>
-            <Button onClick={handleCloseDialog} color="primary" autoFocus>
+            <Button onClick={handleCloseDialog} color="primary">
               OK
             </Button>
           </DialogActions>

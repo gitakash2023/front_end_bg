@@ -1,125 +1,212 @@
-import React from 'react';
-import TextField from '@mui/material/TextField';
-import MenuItem from '@mui/material/MenuItem';
+"use client";
+import React, { useState, useEffect } from "react";
+import { TextField, MenuItem, FormHelperText, Button } from "@mui/material";
 import DateFormate from "../../../../common-components/DateFormate";
 
-const Education = ({ formData, setFormData }) => {
+const educationFields = [
+  { name: "course_name", label: "Course Name", type: "text" },
+  
+ 
+  { name: "university_name", label: "College/University Name", type: "text" },
+  { name: "country", label: "Country", type: "text" },
+  { name: "state", label: "State", type: "text" },
+  { name: "city", label: "City", type: "text" },
+  { name: "duration_start", label: "Start Year", type: "date" },
+  { name: "duration_end", label: "End Year", type: "date" },
+  { name: "passing_year", label: "Passing Year", type: "date" },
+  { name: "gpa_percentage", label: "GPA/Percentage", type: "text" },
+  { name: "roll_number", label: "Roll Number", type: "text" },
+  { name: "certificate_number", label: " Education Certificate Number", type: "text" },
+  { name: "certificate", label: "Upload  Certificate", type: "file" },
+];
 
-  const handleChange = async (e) => {
-    const { name, value, files } = e.target;
+const EducationForm = ({ education, onChange, index, heading }) => {
+  const [fileError, setFileError] = useState(null);
 
-    if (files && files.length > 0) {
+  useEffect(() => {
+    if (education.certificate) {
+      onChange(index, { ...education, certificate_name: education.certificate.name || "Uploaded file" });
+    }
+  }, [education.certificate, index, onChange]);
+
+  const handleChange = (event) => {
+    const { name, value, files } = event.target;
+    if (files) {
       const file = files[0];
-      const fileBlob = await convertFileToBlob(file);
-      setFormData((prevData) => ({
-        ...prevData,
-        [name]: fileBlob,
-      }));
+      if (file.size > 5 * 1024 * 1024) { // 5MB limit
+        setFileError("File size exceeds 5MB.");
+        return;
+      }
+      if (!["application/pdf", "application/msword", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"].includes(file.type)) {
+        setFileError("Invalid file type. Only PDF, DOC, DOCX are allowed.");
+        return;
+      }
+      setFileError(null);
+      const reader = new FileReader();
+      reader.readAsArrayBuffer(file);
+      reader.onloadend = () => {
+        const blob = new Blob([reader.result], { type: file.type });
+        onChange(index, { ...education, [name]: blob, certificate_name: file.name });
+      };
     } else {
-      setFormData((prevData) => ({
-        ...prevData,
-        [name]: value,
-      }));
+      onChange(index, { ...education, [name]: value });
     }
   };
 
-  const convertFileToBlob = (file) => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const blob = new Blob([reader.result], { type: file.type });
-        resolve(blob);
-      };
-      reader.onerror = reject;
-      reader.readAsArrayBuffer(file);
-    });
-  };
-  console.log('Form data:', formData);
+  return (
+    <div className="my-5">
+      <h2>{heading} Education</h2>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px' }}>
+        {educationFields.map((field, idx) => (
+          <div key={idx} style={{ flex: '1 1 calc(50% - 16px)', minWidth: '200px' }}>
+            {field.type === "select" ? (
+              <TextField
+                select
+                name={field.name}
+                value={education[field.name] || ''}
+                onChange={handleChange}
+                label={field.label}
+                variant="outlined"
+                fullWidth
+                margin="normal"
+                InputLabelProps={{ shrink: true }}
+              >
+                {field.options.map((option, idx) => (
+                  <MenuItem key={idx} value={option.value}>
+                    {option.label}
+                  </MenuItem>
+                ))}
+              </TextField>
+            ) : field.type === "date" ? (
+              <DateFormate
+                name={field.name}
+                label={field.label}
+                value={education[field.name]}
+                onChange={handleChange}
+              />
+            ) : field.type === "file" ? (
+              <div>
+                {education.certificate_name && (
+                  <div style={{ marginBottom: '8px' }}>
+                    <strong>Uploaded file:</strong> {education.certificate_name}
+                  </div>
+                )}
+                <TextField
+                  type="file"
+                  name={field.name}
+                  onChange={handleChange}
+                  label={field.label}
+                  variant="outlined"
+                  fullWidth
+                  margin="normal"
+                  InputLabelProps={{ shrink: true }}
+                  InputProps={{
+                    inputProps: {
+                      accept: ".pdf,.doc,.docx"
+                    }
+                  }}
+                />
+                {fileError && <FormHelperText error>{fileError}</FormHelperText>}
+              </div>
+            ) : (
+              <TextField
+                type={field.type}
+                name={field.name}
+                value={education[field.name] || ''}
+                onChange={handleChange}
+                label={field.label}
+                variant="outlined"
+                fullWidth
+                margin="normal"
+                InputLabelProps={{ shrink: true }}
+              />
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
 
-  const fields = [
-    { name: "course_name", label: "Course Name", type: "text" },
-    {
-      name: "highest_qualify",
-      label: "Highest Qualification",
-      type: "select",
-      options: [
-        { label: "12th", value: "12th" },
-        { label: "Graduation", value: "Graduation" },
-        { label: "Master's", value: "Master's" },
-        { label: "PhD", value: "PhD" },
-        { label: "Other", value: "Other" },
-      ],
-    },
-    { name: "university_name", label: "College/University Name", type: "text" },
-    { name: "country", label: "Country", type: "text" },
-    { name: "state", label: "State", type: "text" },
-    { name: "city", label: "City", type: "text" },
-    { name: "duration_start", label: "Start Year", type: "date" },
-    { name: "duration_end", label: "End Year", type: "date" },
-    { name: "passing_year", label: "Passing Year", type: "date" },
-    { name: "gpa_percentage", label: "GPA/Percentage", type: "text" },
-    { name: "roll_number", label: "Roll Number", type: "text" },
-    { name: "certificate_number", label: "Highest Education Certificate Number", type: "text" },
-    { name: "certificate", label: "Upload Highest Certificate", type: "file" },
-  ];
+const Education = ({ formData, setFormData, candidate_id }) => {
+  useEffect(() => {
+    if (formData.length === 0) {
+      setFormData([
+        {
+          course_name: '',
+          highest_qualify: '',
+          university_name: '',
+          country: '',
+          state: '',
+          city: '',
+          duration_start: '',
+          duration_end: '',
+          passing_year: '',
+          gpa_percentage: '',
+          roll_number: '',
+          certificate_number: '',
+          certificate: null,
+          certificate_name: '',
+          education_type: "current",
+          candidate_id
+        },
+        {
+          course_name: '',
+          highest_qualify: '',
+          university_name: '',
+          country: '',
+          state: '',
+          city: '',
+          duration_start: '',
+          duration_end: '',
+          passing_year: '',
+          gpa_percentage: '',
+          roll_number: '',
+          certificate_number: '',
+          certificate: null,
+          certificate_name: '',
+          education_type: "previous",
+          candidate_id
+        },
+        {
+          course_name: '',
+          highest_qualify: '',
+          university_name: '',
+          country: '',
+          state: '',
+          city: '',
+          duration_start: '',
+          duration_end: '',
+          passing_year: '',
+          gpa_percentage: '',
+          roll_number: '',
+          certificate_number: '',
+          certificate: null,
+          certificate_name: '',
+          education_type: "other",
+          candidate_id
+        }
+      ]);
+    }
+  }, [formData, setFormData, candidate_id]);
+
+  const handleEducationChange = (index, updatedEducation) => {
+    setFormData(formData.map((education, idx) => (idx === index ? updatedEducation : education)));
+  };
 
   return (
-    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px' }}>
-      {fields.map((field, index) => (
-        <div key={index} style={{ flex: '1 1 calc(25% - 16px)', minWidth: '200px' }}>
-          {field.type === 'select' ? (
-            <TextField
-              select
-              name={field.name}
-              value={formData[field.name] || ''}
-              onChange={handleChange}
-              label={field.label}
-              variant="outlined"
-              fullWidth
-              margin="normal"
-              required={field.required}
-            >
-              {field.options.map((option, optionIndex) => (
-                <MenuItem key={optionIndex} value={option.value}>
-                  {option.label}
-                </MenuItem>
-              ))}
-            </TextField>
-          ) : field.type === 'file' ? (
-            <TextField
-              type="file"
-              name={field.name}
-              onChange={handleChange}
-              label={field.label}
-              variant="outlined"
-              fullWidth
-              margin="normal"
-              InputLabelProps={{ shrink: true }}
-            />
-          ) : field.type === 'date' ? (
-            <DateFormate
-              name={field.name}
-              label={field.label}
-              value={formData[field.name]}
-              onChange={handleChange}
-            />
-          ) : (
-            <TextField
-              type={field.type}
-              name={field.name}
-              value={formData[field.name] || ''}
-              onChange={handleChange}
-              label={field.label}
-              variant="outlined"
-              fullWidth
-              margin="normal"
-              InputLabelProps={field.type === 'date' ? { shrink: true } : {}}
-            />
-          )}
-        </div>
+    <div>
+      {formData.map((education, index) => (
+        <EducationForm
+          key={index}
+          education={education}
+          onChange={handleEducationChange}
+          index={index}
+          heading={education.education_type}
+        />
       ))}
     </div>
   );
-}
+};
 
 export default Education;
