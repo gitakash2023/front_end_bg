@@ -123,7 +123,7 @@ const WorkExperience = ({ formData, setFormData ,candidate_id}) => {
     if (formData.length === 0) {
       setFormData([
         {
-          candidate_id: '',
+          candidate_id: candidate_id,
           companyName: '',
           companyEmail: '',
           companyLocation: '',
@@ -142,7 +142,7 @@ const WorkExperience = ({ formData, setFormData ,candidate_id}) => {
           experience_type: "current",
         },
         {
-          candidate_id: '',
+          candidate_id: candidate_id,
           companyName: '',
           companyEmail: '',
           companyLocation: '',
@@ -161,7 +161,7 @@ const WorkExperience = ({ formData, setFormData ,candidate_id}) => {
           experience_type: "previous",
         },
         {
-          candidate_id: '',
+          candidate_id: candidate_id,
           companyName: '',
           companyEmail: '',
           companyLocation: '',

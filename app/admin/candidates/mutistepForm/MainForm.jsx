@@ -25,8 +25,8 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 const steps = [
   "General Information",
   "Permanent Address", 
-  "CIBIL Information",
   "Education",
+  "CIBIL Information",
   "Work Experience",
   "Candidate Reference",
 ];
@@ -34,8 +34,8 @@ const steps = [
 const stepEndpoints = [
   "/candidate",
   "/candidate-address",
+  "/candidate-education",
   "/candidate-cibil",
-   "/candidate-education",
   "/workingExp",
   "/candidate-reference",
 ];
@@ -93,6 +93,12 @@ const MainForm = () => {
         if (activeStep === 0) {
           setCandidateId(createdData.id);
           newlyCreatedCandidateId = createdData.id;
+        }
+        if(activeStep ===0 && createdData.isError){
+          setDialogMessage(createdData.msg || "Failed to save data. Please try again.");
+          setSuccess(false);
+          setDialogOpen(true);
+          return;
         }
         router.push(`/admin/candidates/add-candidates?id=${newlyCreatedCandidateId || candidateId}&step=${activeStep + 1}`);
       }
