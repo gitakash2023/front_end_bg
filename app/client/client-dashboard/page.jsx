@@ -6,14 +6,17 @@ import { Button, Typography, Box, ButtonGroup, Container, Grid, Card, CardConten
 import { Pie, Bar } from 'react-chartjs-2';
 import Chart from 'chart.js/auto';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
-import SearchComponent from "../../../common-components/SearchComponent"
+import SearchComponent from "../../../common-components/SearchComponent";
+import { CSVLink } from "react-csv";
+import Snackbar from '@mui/material/Snackbar';
+import Alert from '@mui/material/Alert';
 
 // Register the plugin with Chart.js
 Chart.register(ChartDataLabels);
 
 const loggedInUser = {
-  username: 'akash',
-  email: 'akash@example.com'
+  username: 'Wipro',
+  email: 'wipro@gmail.com'
 };
 
 const statusData = [
@@ -134,13 +137,19 @@ const columns = [
 const CompanyDashboard = () => {
   const [filterStatus, setFilterStatus] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
+  const [openSnackbar, setOpenSnackbar] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
 
   const handleStatusChange = (status) => {
     setFilterStatus(status);
+    setSnackbarMessage(`Filtered by ${status}`);
+    setOpenSnackbar(true);
   };
 
   const handleSearch = (event) => {
     setSearchQuery(event.target.value.toLowerCase());
+    setSnackbarMessage(`Search query updated: ${event.target.value}`);
+    setOpenSnackbar(true);
   };
 
   const getFilteredData = () => {
@@ -167,6 +176,11 @@ const CompanyDashboard = () => {
     return filteredData;
   };
 
+  // Get the first character of the username for the Avatar
+  const avatarChar = loggedInUser.username.charAt(0).toUpperCase();
+
+  const exportData = getFilteredData(); // Data to export
+
   return (
     <>
       <Header />
@@ -176,24 +190,28 @@ const CompanyDashboard = () => {
             Candidate Verification Status
           </Typography>
           <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-            <Avatar sx={{ bgcolor: '#1976d2', mr: 2 }}>U</Avatar>
+            <Avatar sx={{ bgcolor: '#1976d2', mr: 2 }}>{avatarChar}</Avatar>
             <Typography variant="h6">{loggedInUser.username}</Typography>
             <Typography variant="subtitle1" sx={{ ml: 2 }}>{loggedInUser.email}</Typography>
           </Box>
-          
-            
-          
           <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
-  <ButtonGroup sx={{ mb: 2 }}>
-    <Button variant="contained" sx={{ mx: 1 }} onClick={() => handleStatusChange('All')}>All</Button>
-    <Button variant="contained" sx={{ mx: 1 }} onClick={() => handleStatusChange('Verified')}>Verified</Button>
-    <Button variant="contained" sx={{ mx: 1 }} onClick={() => handleStatusChange('In Progress')}>In Progress</Button>
-    <Button variant="contained" sx={{ mx: 1 }} onClick={() => handleStatusChange('Rejected')}>Rejected</Button>
-  </ButtonGroup>
-  <Box sx={{ flexGrow: 1 }} />
-  <SearchComponent searchQuery={searchQuery} onSearch={handleSearch} />
-</Box>
-
+            <ButtonGroup sx={{ mb: 2 }}>
+              <Button variant="contained" sx={{ mx: 1 }} onClick={() => handleStatusChange('All')}>All</Button>
+              <Button variant="contained" sx={{ mx: 1 }} onClick={() => handleStatusChange('Verified')}>Verified</Button>
+              <Button variant="contained" sx={{ mx: 1 }} onClick={() => handleStatusChange('In Progress')}>In Progress</Button>
+              <Button variant="contained" sx={{ mx: 1 }} onClick={() => handleStatusChange('Rejected')}>Rejected</Button>
+            </ButtonGroup>
+            <Box sx={{ flexGrow: 1 }} />
+            <SearchComponent searchQuery={searchQuery} onSearch={handleSearch} />
+            <CSVLink
+              data={exportData}
+              filename={"candidates_data.csv"}
+              
+              style={{ textDecoration: 'none', marginLeft: '16px' }}
+            >
+              <Button variant="contained">Export Data</Button>
+            </CSVLink>
+          </Box>
           <Box sx={{ height: 400, width: '100%', mb: 3 }}>
             <DataGrid 
               rows={getFilteredData()} 
@@ -211,7 +229,7 @@ const CompanyDashboard = () => {
                   title="Status Distribution"
                   subheader="Pie chart showing candidate status distribution"
                 />
-                <CardContent sx={{ height: 300 }}>
+                <CardContent sx={{ height: 'auto', minHeight: 300 }}>
                   <Pie data={pieChartData} plugins={[ChartDataLabels]} />
                 </CardContent>
               </Card>
@@ -222,12 +240,21 @@ const CompanyDashboard = () => {
                   title="Status Overview"
                   subheader="Bar chart showing number of candidates per status"
                 />
-                <CardContent sx={{ height: 300 }}>
+                <CardContent sx={{ height: 'auto', minHeight: 300 }}>
                   <Bar data={barChartData} plugins={[ChartDataLabels]} />
                 </CardContent>
               </Card>
             </Grid>
           </Grid>
+          <Snackbar
+            open={openSnackbar}
+            autoHideDuration={3000}
+            onClose={() => setOpenSnackbar(false)}
+          >
+            <Alert onClose={() => setOpenSnackbar(false)} severity="info">
+              {snackbarMessage}
+            </Alert>
+          </Snackbar>
         </Box>
       </Container>
     </>
