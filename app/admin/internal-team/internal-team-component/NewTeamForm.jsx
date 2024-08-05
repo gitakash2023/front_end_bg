@@ -16,12 +16,11 @@ const roles = [
 ];
 
 const inputFields = [
-    { name: 'name', placeholder: 'Name of Team', label: 'Name', type: 'text', icon: <FaUser /> },
+    { name: 'name', placeholder: 'Name of Member', label: 'Name', type: 'text', icon: <FaUser /> },
     { name: 'email_id', placeholder: 'Email ID', label: 'Email', type: 'email', icon: <FaEnvelope /> },
     { name: 'mobile_number', placeholder: 'Phone Number', label: 'Phone Number', type: 'text', icon: <FaMobile /> },
     { name: 'company_name', placeholder: 'Select Company', label: 'Company Name', type: 'text', icon: <FaBuilding /> },
     { name: 'role', placeholder: 'Select Role', label: 'Role', type: 'text', icon: <FaBriefcase /> },
-
 ];
 
 const roleMapping = {
@@ -82,7 +81,14 @@ const NewTeamForm = ({ team, onClose, updateTeamList }) => {
         try {
             // Convert role to its numeric value
             const numericRole = roleMapping[values.role] || '';
-            const updatedValues = { ...values, role: numericRole, company_id: selectedCompany ? selectedCompany.id : '' };
+            const updatedValues = { 
+                ...values, 
+                role: numericRole, 
+                company_id: selectedCompany ? selectedCompany.id : ''
+            };
+
+            // Log the data to be sent
+            console.log('Data being sent to the backend:', updatedValues);
 
             if (team) {
                 await _update('/internal-team', team.id, updatedValues);
@@ -91,6 +97,11 @@ const NewTeamForm = ({ team, onClose, updateTeamList }) => {
                 await _create('/internal-team', updatedValues);
                 setSuccessMessage('Team registered successfully!');
             }
+            
+            // Optional: Reset form if needed
+            resetForm();
+
+            // Close the form and update the team list
             onClose();
             updateTeamList();
         } catch (error) {

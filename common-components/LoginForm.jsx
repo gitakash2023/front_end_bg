@@ -33,12 +33,37 @@ const LoginPage = () => {
       const { user_role } = response;
       setFormData({ username: "", password: "" });
       setError(null);
-      if (user_role === 3) {
-        router.push("/admin/candidates/add-candidates");
-      } else if (user_role === 2) {
-        router.push("/client/client-dashboard");
-      } else {
-        router.push("/admin/admin-dashboard");
+
+      switch (user_role) {
+        case 1:
+          router.push("/admin/admin-dashboard");
+          break;
+        case 2:
+          router.push("/client/client-dashboard");
+          break;
+        case 3:
+          router.push("/admin/candidates/add-candidates");
+          break;
+        case 4:
+          router.push("/geninfo/dashboard");
+          break;
+        case 5:
+          router.push("/educationinfo/dashboard");
+          break;
+        case 6:
+          router.push("/addressinfo/dashboard");
+          break;
+        case 7:
+          router.push("/cibilinfo/dashboard");
+          break;
+        case 8:
+          router.push("/referenceinfo/dashboard");
+          break;
+        case 9:
+          router.push("/experienceinfo/dashboard");
+          break;
+        default:
+          setError("Invalid user role.");
       }
     } catch (error) {
       setError(error.message);
