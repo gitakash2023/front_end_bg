@@ -76,7 +76,7 @@ const CompanyDashboard = () => {
       <Header />
       <Box sx={{ p: 2 }}>
       <Typography variant="h4" gutterBottom>
-          Candidate Verification Status
+          Candidate Verification Status - Company Dashboard
         </Typography>
         <Paper sx={{ p: 2, mb: 2, display: 'flex', alignItems: 'center', gap: 2 }}>
           <FormControl variant="outlined" sx={{ minWidth: 200 }}>

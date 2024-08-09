@@ -84,7 +84,7 @@ const NewTeamForm = ({ team, onClose, updateTeamList }) => {
             const updatedValues = { 
                 ...values, 
                 role: numericRole, 
-                company_id: selectedCompany ? selectedCompany.id : ''
+                client_id: selectedCompany ? selectedCompany.id : ''
             };
 
             // Log the data to be sent
