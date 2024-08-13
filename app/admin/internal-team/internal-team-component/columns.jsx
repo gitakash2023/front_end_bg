@@ -4,7 +4,7 @@ const staticColumns = [
     { field: 'email_id', headerName: 'Email', width: 200 },
     { field: 'mobile_number', headerName: 'Phone Number', width: 200 },
     
-    { field: 'user_role', headerName: 'Role', width: 200 },
+    { field: 'role', headerName: 'Role', width: 200 },
    
   ];
   

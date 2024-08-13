@@ -19,7 +19,7 @@ const inputFields = [
     { name: 'name', placeholder: 'Name of Member', label: 'Name', type: 'text', icon: <FaUser /> },
     { name: 'email_id', placeholder: 'Email ID', label: 'Email', type: 'email', icon: <FaEnvelope /> },
     { name: 'mobile_number', placeholder: 'Phone Number', label: 'Phone Number', type: 'text', icon: <FaMobile /> },
-    { name: 'role', placeholder: 'Select Role', label: 'Operational Team', type: 'text', icon: <FaBriefcase /> },
+    { name: 'user_role', placeholder: 'Select Role', label: 'Operational Team', type: 'text', icon: <FaBriefcase /> },
 ];
 
 const roleMapping = {
@@ -35,14 +35,14 @@ const NewTeamForm = ({ team, onClose, updateTeamList }) => {
     const [successMessage, setSuccessMessage] = useState('');
     const [errorMessage, setErrorMessage] = useState('');
     const [snackbarOpen, setSnackbarOpen] = useState(false);
-    const [role, setRole] = useState(team ? team.role : '');
+    const [userRole, setUserRole] = useState(team ? team.user_role : '');
     const [roleOptions, setRoleOptions] = useState(roles.map(role => ({ label: role })));
 
     const initialValues = {
         name: team ? team.name : '',
         email_id: team ? team.email_id : '',
         mobile_number: team ? team.mobile_number : '',
-        role: team ? team.role : ''
+        user_role: team ? team.user_role : ''
     };
 
     useEffect(() => {
@@ -60,10 +60,10 @@ const NewTeamForm = ({ team, onClose, updateTeamList }) => {
     const onSubmit = async (values, { setSubmitting, resetForm }) => {
         try {
             // Convert role to its numeric value
-            const numericRole = roleMapping[values.role] || '';
+            const numericRole = roleMapping[values.user_role] || '';
             const updatedValues = { 
                 ...values, 
-                role: numericRole
+                user_role: numericRole
             };
 
             // Log the data to be sent
@@ -117,7 +117,7 @@ const NewTeamForm = ({ team, onClose, updateTeamList }) => {
                             validate={(values) => {
                                 const errors = {};
                                 inputFields.forEach(field => {
-                                    if (field.name !== 'role' && !values[field.name]) {
+                                    if (field.name !== 'user_role' && !values[field.name]) {
                                         errors[field.name] = `${field.label} is required`;
                                     } else if (field.name === 'email_id' && !/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(values.email_id)) {
                                         errors.email_id = 'Invalid email address';
@@ -133,12 +133,12 @@ const NewTeamForm = ({ team, onClose, updateTeamList }) => {
                                     {inputFields.map((field, index) => (
                                         <div key={index} className="mb-3">
                                             <div className="input-group">
-                                                {field.name === 'role' ? (
+                                                {field.name === 'user_role' ? (
                                                     <Autocomplete
-                                                        value={roleOptions.find(option => option.label === role) || null}
+                                                        value={roleOptions.find(option => option.label === userRole) || null}
                                                         onChange={(event, newValue) => {
                                                             const selectedRole = newValue ? newValue.label : '';
-                                                            setRole(selectedRole);
+                                                            setUserRole(selectedRole);
                                                             setFieldValue(field.name, selectedRole);
                                                         }}
                                                         options={roleOptions}
