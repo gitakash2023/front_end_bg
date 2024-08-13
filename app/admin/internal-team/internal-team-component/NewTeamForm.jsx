@@ -1,8 +1,8 @@
 "use client";
 import React, { useState, useEffect } from 'react';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
-import { FaUser, FaEnvelope, FaMobile, FaBriefcase, FaBuilding } from 'react-icons/fa';
-import { _create, _update, _getAll } from '../../../../utils/apiUtils';
+import { FaUser, FaEnvelope, FaMobile, FaBriefcase } from 'react-icons/fa';
+import { _create, _update } from '../../../../utils/apiUtils';
 import { Snackbar, IconButton, Autocomplete, TextField } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 
@@ -19,8 +19,7 @@ const inputFields = [
     { name: 'name', placeholder: 'Name of Member', label: 'Name', type: 'text', icon: <FaUser /> },
     { name: 'email_id', placeholder: 'Email ID', label: 'Email', type: 'email', icon: <FaEnvelope /> },
     { name: 'mobile_number', placeholder: 'Phone Number', label: 'Phone Number', type: 'text', icon: <FaMobile /> },
-    { name: 'company_name', placeholder: 'Select Company', label: 'Company Name', type: 'text', icon: <FaBuilding /> },
-    { name: 'role', placeholder: 'Select Role', label: 'Role', type: 'text', icon: <FaBriefcase /> },
+    { name: 'role', placeholder: 'Select Role', label: 'Operational Team', type: 'text', icon: <FaBriefcase /> },
 ];
 
 const roleMapping = {
@@ -37,33 +36,14 @@ const NewTeamForm = ({ team, onClose, updateTeamList }) => {
     const [errorMessage, setErrorMessage] = useState('');
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [role, setRole] = useState(team ? team.role : '');
-    const [companyOptions, setCompanyOptions] = useState([]);
     const [roleOptions, setRoleOptions] = useState(roles.map(role => ({ label: role })));
-    const [selectedCompany, setSelectedCompany] = useState(null);
 
     const initialValues = {
         name: team ? team.name : '',
         email_id: team ? team.email_id : '',
         mobile_number: team ? team.mobile_number : '',
-        role: team ? team.role : '',
-        company_name: team ? team.company_name : ''
+        role: team ? team.role : ''
     };
-
-    useEffect(() => {
-        const fetchCompanies = async () => {
-            try {
-                const companiesData = await _getAll("/client");
-                setCompanyOptions(companiesData.map(company => ({
-                    id: company.id,
-                    name: company.name
-                })));
-            } catch (error) {
-                console.error('Error fetching companies:', error);
-            }
-        };
-
-        fetchCompanies();
-    }, []);
 
     useEffect(() => {
         if (successMessage || errorMessage) {
@@ -83,8 +63,7 @@ const NewTeamForm = ({ team, onClose, updateTeamList }) => {
             const numericRole = roleMapping[values.role] || '';
             const updatedValues = { 
                 ...values, 
-                role: numericRole, 
-                client_id: selectedCompany ? selectedCompany.id : ''
+                role: numericRole
             };
 
             // Log the data to be sent
@@ -138,7 +117,7 @@ const NewTeamForm = ({ team, onClose, updateTeamList }) => {
                             validate={(values) => {
                                 const errors = {};
                                 inputFields.forEach(field => {
-                                    if (field.name !== 'role' && field.name !== 'company_name' && !values[field.name]) {
+                                    if (field.name !== 'role' && !values[field.name]) {
                                         errors[field.name] = `${field.label} is required`;
                                     } else if (field.name === 'email_id' && !/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(values.email_id)) {
                                         errors.email_id = 'Invalid email address';
@@ -164,25 +143,6 @@ const NewTeamForm = ({ team, onClose, updateTeamList }) => {
                                                         }}
                                                         options={roleOptions}
                                                         getOptionLabel={(option) => option.label}
-                                                        renderInput={(params) => (
-                                                            <TextField
-                                                                {...params}
-                                                                label={field.label}
-                                                                variant="outlined"
-                                                                placeholder={field.placeholder}
-                                                            />
-                                                        )}
-                                                        className="form-control"
-                                                    />
-                                                ) : field.name === 'company_name' ? (
-                                                    <Autocomplete
-                                                        value={selectedCompany}
-                                                        onChange={(event, newValue) => {
-                                                            setSelectedCompany(newValue);
-                                                            setFieldValue(field.name, newValue ? newValue.name : '');
-                                                        }}
-                                                        options={companyOptions}
-                                                        getOptionLabel={(option) => option.name}
                                                         renderInput={(params) => (
                                                             <TextField
                                                                 {...params}

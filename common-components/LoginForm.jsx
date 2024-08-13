@@ -59,9 +59,9 @@ const LoginPage = () => {
         case 8:
           router.push("/referenceinfo/dashboard");
           break;
-        case 9:
-          router.push("/experienceinfo/dashboard");
-          break;
+          case 9:
+            router.push("/experienceinfo/dashboard");
+            break;
         default:
           setError("Invalid user role.");
       }

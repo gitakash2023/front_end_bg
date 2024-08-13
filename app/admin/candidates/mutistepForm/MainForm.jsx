@@ -140,9 +140,9 @@ const MainForm = () => {
 
   const handleCloseDialog = () => {
     setDialogOpen(false);
-    if (success) {
-      router.push("/admin/candidates");
-    }
+    // if (success) {
+    //   router.push("/admin/candidates");
+    // }
   };
 
   const handleGoToLastStep = () => {
