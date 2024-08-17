@@ -22,15 +22,6 @@ const inputFields = [
     { name: 'user_role', placeholder: 'Select Role', label: 'Operational Team', type: 'text', icon: <FaBriefcase /> },
 ];
 
-const roleMapping = {
-    'GenInfo': 4,
-    'EducationInfo': 5,
-    'AddressInfo': 6,
-    'CibilInfo': 7,
-    'ReferenceInfo': 8,
-    'ExperienceInfo': 9
-};
-
 const NewTeamForm = ({ team, onClose, updateTeamList }) => {
     const [successMessage, setSuccessMessage] = useState('');
     const [errorMessage, setErrorMessage] = useState('');
@@ -59,11 +50,9 @@ const NewTeamForm = ({ team, onClose, updateTeamList }) => {
 
     const onSubmit = async (values, { setSubmitting, resetForm }) => {
         try {
-            // Convert role to its numeric value
-            const numericRole = roleMapping[values.user_role] || '';
             const updatedValues = { 
-                ...values, 
-                user_role: numericRole
+                ...values,
+                user_role: userRole
             };
 
             // Log the data to be sent

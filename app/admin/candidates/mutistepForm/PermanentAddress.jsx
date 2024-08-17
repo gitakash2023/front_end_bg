@@ -1,8 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { TextField, MenuItem, FormHelperText, Button } from "@mui/material";
+import { TextField, MenuItem } from "@mui/material";
 import DateFormate from "../../../../common-components/DateFormate";
-
 
 const fields = [
   { name: "country_id", label: "Country", type: "text" },
@@ -18,46 +17,35 @@ const fields = [
 ];
 
 const AddressForm = ({ address, onChange, index, heading }) => {
-  const [fileError, setFileError] = useState(null);
-
-
   useEffect(() => {
+    // Update the state when the file is set
     if (address.address_proof_file) {
-      onChange(index, { ...address, address_proof_file_name: address.address_proof_file.name || "Uploaded file" });
+      onChange(index, { ...address });
     }
   }, [address.address_proof_file, index, onChange]);
 
   const handleChange = (event) => {
     const { name, value, files } = event.target;
+
     if (files) {
       const file = files[0];
-      if (file.size > 5 * 1024 * 1024) { // 5MB limit
-        setFileError("File size exceeds 5MB.");
-        return;
-      }
-      if (!["application/pdf", "application/msword", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"].includes(file.type)) {
-        setFileError("Invalid file type. Only PDF, DOC, DOCX are allowed.");
-        return;
-      }
-      setFileError(null);
-      const reader = new FileReader();
-      reader.readAsArrayBuffer(file);
-      reader.onloadend = () => {
-        const blob = new Blob([reader.result], { type: file.type });
-        onChange(index, { ...address, [name]: blob, address_proof_file_name: file.name });
-      };
+      const formData = new FormData();
+      formData.append(name, file);
+
+      // Updating form data with the new file
+      onChange(index, { ...address, address_proof_file: formData.get(name) });
     } else {
+      // Updating form data with text values
       onChange(index, { ...address, [name]: value });
     }
   };
 
   return (
-
     <div className="my-5">
-      <h2>{heading} address</h2>
+      <h2>{heading} Address</h2>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px' }}>
-        {fields.map((field, index) => (
-          <div key={index} style={{ flex: '1 1 calc(50% - 16px)', minWidth: '200px' }}>
+        {fields.map((field, fieldIndex) => (
+          <div key={fieldIndex} style={{ flex: '1 1 calc(50% - 16px)', minWidth: '200px' }}>
             {field.type === "select" ? (
               <TextField
                 select
@@ -85,9 +73,9 @@ const AddressForm = ({ address, onChange, index, heading }) => {
               />
             ) : field.type === "file" ? (
               <div>
-                {address.address_proof_file_name && (
+                {address.address_proof_file && (
                   <div style={{ marginBottom: '8px' }}>
-                    <strong>Uploaded file:</strong> {address.address_proof_file_name}
+                    <strong>Uploaded file:</strong> {address.address_proof_file.name}
                   </div>
                 )}
                 <TextField
@@ -99,13 +87,7 @@ const AddressForm = ({ address, onChange, index, heading }) => {
                   fullWidth
                   margin="normal"
                   InputLabelProps={{ shrink: true }}
-                  InputProps={{
-                    inputProps: {
-                      accept: ".pdf,.doc,.docx"
-                    }
-                  }}
                 />
-                {fileError && <FormHelperText error>{fileError}</FormHelperText>}
               </div>
             ) : (
               <TextField
@@ -127,11 +109,7 @@ const AddressForm = ({ address, onChange, index, heading }) => {
   );
 };
 
-
 const AddressContainer = ({ formData, setFormData, candidate_id }) => {
-  const [activeAddressIndex, setActiveAddressIndex] = useState(0);
- 
-
   useEffect(() => {
     if (formData.length === 0) {
       setFormData([
@@ -145,8 +123,7 @@ const AddressContainer = ({ formData, setFormData, candidate_id }) => {
           stay_from_date: "",
           stay_till_date: "",
           full_address: "",
-          address_proof_file: null,
-          address_proof_file_name: "",
+          address_proof_file: "",
           address_type: "current",
           candidate_id
         },
@@ -160,8 +137,7 @@ const AddressContainer = ({ formData, setFormData, candidate_id }) => {
           stay_from_date: "",
           stay_till_date: "",
           full_address: "",
-          address_proof_file: null,
-          address_proof_file_name: "",
+          address_proof_file: "",
           address_type: "permanent",
           candidate_id
         },
@@ -175,14 +151,13 @@ const AddressContainer = ({ formData, setFormData, candidate_id }) => {
           stay_from_date: "",
           stay_till_date: "",
           full_address: "",
-          address_proof_file: null,
-          address_proof_file_name: "",
+          address_proof_file: "",
           address_type: "previous",
           candidate_id
         }
       ]);
     }
-  }, [formData, setFormData]);
+  }, [formData, setFormData, candidate_id]);
 
   const handleAddressChange = (index, updatedAddress) => {
     setFormData(formData.map((address, idx) =>

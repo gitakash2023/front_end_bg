@@ -67,7 +67,7 @@ const MainForm = () => {
         console.log(`Fetching data for step ${step} with candidateId ${candidateId}`);
         let data = await _getById(stepEndpoints[step], candidateId);
         console.log(`Data fetched for step ${step}:`, data);
-        data = data || [];
+        data = data || (Array.isArray(data) ? [] : {});
         setStepData(data);
       } catch (error) {
         console.error(`Failed to fetch data for step ${step}`, error);
@@ -83,24 +83,46 @@ const MainForm = () => {
   
     try {
       // Check if we need to create or update data
-      if (stepData && (stepData.id || (Array.isArray(stepData) && stepData.every(data => data.id)))) {
-        console.log(`Updating data for step ${activeStep}`);
-        await _update(stepEndpoints[activeStep], stepData.id || stepData[0].id, stepData);
-      } else if (stepData) {
-        console.log(`Creating new data for step ${activeStep}`);
-        const createdData = await _create(stepEndpoints[activeStep], stepData);
-        console.log(`Data created:`, createdData);
-        if (activeStep === 0) {
-          setCandidateId(createdData.id);
-          newlyCreatedCandidateId = createdData.id;
+      if (Array.isArray(stepData)) {
+        for (let item of stepData) {
+          if (item.id) {
+            console.log(`Updating data for step ${activeStep}`);
+            await _update(stepEndpoints[activeStep], item.id, item);
+          } else {
+            console.log(`Creating new data for step ${activeStep}`);
+            const createdData = await _create(stepEndpoints[activeStep], item);
+            console.log(`Data created:`, createdData);
+            if (activeStep === 0) {
+              setCandidateId(createdData.id);
+              newlyCreatedCandidateId = createdData.id;
+            }
+            if(activeStep === 0 && createdData.isError){
+              setDialogMessage(createdData.msg || "Failed to save data. Please try again.");
+              setSuccess(false);
+              setDialogOpen(true);
+              return;
+            }
+          }
         }
-        if(activeStep ===0 && createdData.isError){
-          setDialogMessage(createdData.msg || "Failed to save data. Please try again.");
-          setSuccess(false);
-          setDialogOpen(true);
-          return;
+      } else {
+        if (stepData.id) {
+          console.log(`Updating data for step ${activeStep}`);
+          await _update(stepEndpoints[activeStep], stepData.id, stepData);
+        } else {
+          console.log(`Creating new data for step ${activeStep}`);
+          const createdData = await _create(stepEndpoints[activeStep], stepData);
+          console.log(`Data created:`, createdData);
+          if (activeStep === 0) {
+            setCandidateId(createdData.id);
+            newlyCreatedCandidateId = createdData.id;
+          }
+          if(activeStep === 0 && createdData.isError){
+            setDialogMessage(createdData.msg || "Failed to save data. Please try again.");
+            setSuccess(false);
+            setDialogOpen(true);
+            return;
+          }
         }
-        router.push(`/admin/candidates/add-candidates?id=${newlyCreatedCandidateId || candidateId}&step=${activeStep + 1}`);
       }
       // Reset data and move to the next step
       setStepData([]);
@@ -122,7 +144,6 @@ const MainForm = () => {
       setIsLoading(false);
     }
   };
-  
 
   const handleBack = async () => {
     setIsLoading(true);
@@ -189,41 +210,38 @@ const MainForm = () => {
         </Stepper>
         <div>
           {isLoading ? (
-            <div style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
-              <CircularProgress />
-            </div>
+            <CircularProgress />
           ) : (
-            getStepContent(activeStep)
+            <>
+              {getStepContent(activeStep)}
+              <div>
+                <Button disabled={activeStep === 0} onClick={handleBack}>
+                  Back
+                </Button>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={handleNext}
+                  disabled={isLoading}
+                >
+                  {activeStep === steps.length - 1 ? "Finish" : "Next"}
+                </Button>
+              </div>
+            </>
           )}
-          <div>
-            <Button
-              disabled={activeStep === 0 || isLoading}
-              onClick={handleBack}
-              variant="contained"
-            >
-              Back
-            </Button>
-            <Button
-              disabled={isLoading}
-              onClick={handleNext}
-              variant="contained"
-            >
-              {activeStep === steps.length - 1 ? "Finish" : "Next"}
-            </Button>
-          </div>
         </div>
-        <Dialog open={dialogOpen} onClose={handleCloseDialog}>
-          <DialogTitle>{success ? "Success" : "Error"}</DialogTitle>
-          <DialogContent>
-            <DialogContentText>{dialogMessage}</DialogContentText>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={handleCloseDialog} color="primary">
-              OK
-            </Button>
-          </DialogActions>
-        </Dialog>
       </div>
+      <Dialog open={dialogOpen} onClose={handleCloseDialog}>
+        <DialogTitle>{success ? "Success" : "Error"}</DialogTitle>
+        <DialogContent>
+          <DialogContentText>{dialogMessage}</DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDialog} color="primary" autoFocus>
+            Close
+          </Button>
+        </DialogActions>
+      </Dialog>
     </>
   );
 };

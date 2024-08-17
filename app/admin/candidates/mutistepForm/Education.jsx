@@ -5,14 +5,10 @@ import DateFormate from "../../../../common-components/DateFormate";
 
 const educationFields = [
   { name: "course_name", label: "Course Name", type: "text" },
-  
- 
   { name: "university_name", label: "College/University Name", type: "text" },
   { name: "country", label: "Country", type: "text" },
   { name: "state", label: "State", type: "text" },
   { name: "city", label: "City", type: "text" },
-  { name: "duration_start", label: "Start Year", type: "date" },
-  { name: "duration_end", label: "End Year", type: "date" },
   { name: "passing_year", label: "Passing Year", type: "date" },
   { name: "gpa_percentage", label: "GPA/Percentage", type: "text" },
   { name: "roll_number", label: "Roll Number", type: "text" },
@@ -139,8 +135,6 @@ const Education = ({ formData, setFormData, candidate_id }) => {
           country: '',
           state: '',
           city: '',
-          duration_start: '',
-          duration_end: '',
           passing_year: '',
           gpa_percentage: '',
           roll_number: '',
@@ -157,8 +151,6 @@ const Education = ({ formData, setFormData, candidate_id }) => {
           country: '',
           state: '',
           city: '',
-          duration_start: '',
-          duration_end: '',
           passing_year: '',
           gpa_percentage: '',
           roll_number: '',
@@ -175,8 +167,6 @@ const Education = ({ formData, setFormData, candidate_id }) => {
           country: '',
           state: '',
           city: '',
-          duration_start: '',
-          duration_end: '',
           passing_year: '',
           gpa_percentage: '',
           roll_number: '',

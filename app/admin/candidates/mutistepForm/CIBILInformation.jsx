@@ -14,40 +14,16 @@ const CIBILInformation = ({ formData, setFormData }) => {
     }));
   };
 
-  const handleFileChange = async (event) => {
+  const handleFileChange = (event) => {
     const { name, files } = event.target;
 
     if (files && files[0]) {
-      try {
-        const file = files[0];
-        const fileBlob = await fileToBlob(file);
-        setFormData((prevData) => ({
-          ...prevData,
-          [name]: {
-            blob: fileBlob,
-            name: file.name,
-          },
-        }));
-      } catch (error) {
-        console.error("Error selecting file:", error);
-      }
+      const file = files[0];
+      setFormData((prevData) => ({
+        ...prevData,
+        [name]: file,  // Directly store the file object
+      }));
     }
-  };
-
-  const fileToBlob = async (file) => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => {
-        const arrayBuffer = reader.result;
-        const blob = new Blob([arrayBuffer], { type: file.type });
-        resolve(blob);
-      };
-      reader.onerror = (error) => {
-        console.error("Error reading file:", error);
-        reject(error);
-      };
-      reader.readAsArrayBuffer(file);
-    });
   };
 
   const fields = [
@@ -76,7 +52,7 @@ const CIBILInformation = ({ formData, setFormData }) => {
                 InputLabelProps={{ shrink: true }}
                 InputProps={{ inputProps: { accept: ".pdf, .png, .jpg, .jpeg" }, ref: fileInputRef }}
               />
-              {formData[field.name] && formData[field.name].name && (
+              {formData[field.name] && formData[field.name] instanceof File && (
                 <div style={{ marginTop: '8px' }}>
                   <Typography variant="body2">
                     <strong>Uploaded File:</strong> {formData[field.name].name}
@@ -84,7 +60,7 @@ const CIBILInformation = ({ formData, setFormData }) => {
                   <Button
                     variant="outlined"
                     color="primary"
-                    href={URL.createObjectURL(formData[field.name].blob)}
+                    href={URL.createObjectURL(formData[field.name])}
                     download={formData[field.name].name}
                     target="_blank"
                     style={{ marginTop: '4px' }}
