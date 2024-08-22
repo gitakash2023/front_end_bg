@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { TextField, FormHelperText, MenuItem } from '@mui/material';
+import { TextField, FormHelperText } from '@mui/material';
 import DateFormate from "../../../../common-components/DateFormate";
 
 const workExperienceFields = [
@@ -45,12 +45,7 @@ const WorkExperienceForm = ({ workExperience, onChange, index, heading }) => {
         return;
       }
       setFileError(null);
-      const reader = new FileReader();
-      reader.readAsArrayBuffer(file);
-      reader.onloadend = () => {
-        const blob = new Blob([reader.result], { type: file.type });
-        onChange(index, { ...workExperience, [name]: blob, [`${name}_name`]: file.name });
-      };
+      onChange(index, { ...workExperience, [name]: file, [`${name}_name`]: file.name });
     } else {
       onChange(index, { ...workExperience, [name]: value });
     }
@@ -59,11 +54,6 @@ const WorkExperienceForm = ({ workExperience, onChange, index, heading }) => {
   return (
     <div className="my-5">
       <h2>{heading} Work Experience</h2>
-      <TextField
-        type="hidden"
-        name="candidate_id"
-        value={workExperience.candidate_id || ''}
-      />
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px' }}>
         {workExperienceFields.map((field, idx) => (
           <div key={idx} style={{ flex: '1 1 calc(50% - 16px)', minWidth: '300px' }}>
@@ -118,7 +108,7 @@ const WorkExperienceForm = ({ workExperience, onChange, index, heading }) => {
   );
 };
 
-const WorkExperience = ({ formData, setFormData ,candidate_id}) => {
+const WorkExperience = ({ formData, setFormData, candidate_id }) => {
   useEffect(() => {
     if (formData.length === 0) {
       setFormData([
@@ -181,7 +171,7 @@ const WorkExperience = ({ formData, setFormData ,candidate_id}) => {
         }
       ]);
     }
-  }, [formData, setFormData]);
+  }, [formData, setFormData, candidate_id]);
 
   const handleWorkExperienceChange = (index, updatedWorkExperience) => {
     setFormData(formData.map((workExperience, idx) => (idx === index ? updatedWorkExperience : workExperience)));

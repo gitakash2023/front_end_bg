@@ -12,7 +12,7 @@ import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
 import GeneralInformation from "./GeneralInformation";
 import AddressContainer from "./PermanentAddress";
-import Education from "./Education";
+
 import CIBILInformation from "./CIBILInformation";
 import OtherReferenceInformation from "./OtherReferenceInformation";
 import WorkExperience from "./WorkExperience";
@@ -21,6 +21,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Header from "@/common-components/Header";
 import CustomButton from "@/common-components/CustomButton"; 
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'; 
+import EducationContainer from "./Education";
 
 const steps = [
   "General Information",
@@ -180,13 +181,13 @@ const MainForm = () => {
       case 1:
         return <AddressContainer formData={stepData} setFormData={setStepData} candidate_id={candidateId} />;
       case 2:
-        return <Education formData={stepData} setFormData={setStepData} candidate_id={candidateId} />;
+        return <EducationContainer formData={stepData} setFormData={setStepData} candidate_id={candidateId} />;
       case 3:
-        return <CIBILInformation formData={stepData} setFormData={setStepData} />;
+        return <CIBILInformation formData={stepData} setFormData={setStepData}  candidate_id={candidateId}/>;
       case 4:
         return <WorkExperience formData={stepData} setFormData={setStepData} candidate_id={candidateId} />;
       case 5:
-        return <OtherReferenceInformation formData={stepData} setFormData={setStepData} />;
+        return <OtherReferenceInformation formData={stepData} setFormData={setStepData} candidate_id={candidateId} />;
       default:
         return "Unknown step";
     }

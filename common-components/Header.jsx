@@ -1,11 +1,10 @@
-"use client";
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation'; 
 import { AppBar, Toolbar, Typography, Box, IconButton, Menu, MenuItem, ListItemIcon, Snackbar, Alert } from '@mui/material';
 import AccountCircle from '@mui/icons-material/AccountCircle';
 import Logout from '@mui/icons-material/Logout';
 import Logo from './header-components/Logo';
-import { _create } from "../utils/apiUtils"
+import { _create } from "../utils/apiUtils";
 
 const Header = () => {
   const [userEmail] = useState('mediatechtemple@gmail.com');
@@ -16,7 +15,7 @@ const Header = () => {
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [snackbarSeverity, setSnackbarSeverity] = useState('success');
-  const router = useRouter(); // Initialize useRouter
+  const router = useRouter();
 
   const handleMenu = (event) => {
     setAnchorEl(event.currentTarget);
@@ -32,25 +31,19 @@ const Header = () => {
 
   const handleLogout = async () => {
     try {
-      // Call the logout API
-      const response = await _create('/users/logout', {}); // Assuming the logout endpoint is /logout and it expects a POST request with no data
+      const response = await _create('/users/logout', {});
 
       if (response) {
-        // Show success snackbar
         setSnackbarMessage('Logout successful');
         setSnackbarSeverity('success');
         setSnackbarOpen(true);
-
-        // Redirect to the login page
         router.push('/auth/login');
       } else {
-        // Show error snackbar
         setSnackbarMessage('Logout failed');
         setSnackbarSeverity('error');
         setSnackbarOpen(true);
       }
     } catch (error) {
-      // Show error snackbar
       setSnackbarMessage('An error occurred during logout');
       setSnackbarSeverity('error');
       setSnackbarOpen(true);
@@ -59,13 +52,67 @@ const Header = () => {
     handleClose();
   };
 
+  useEffect(() => {
+    const handleHomeClick = () => {
+      if (typeof window !== 'undefined') {
+        const userDetails = JSON.parse(localStorage.getItem('userDetails'));
+        const userRole = userDetails?.user_role;
+
+        switch (userRole) {
+          case 1:
+            router.push("/admin/admin-dashboard");
+            break;
+          case 2:
+            router.push("/client/client-dashboard");
+            break;
+          case 3:
+            router.push("/admin/candidates/add-candidates");
+            break;
+          case 4:
+            router.push("/geninfo/dashboard");
+            break;
+          case 5:
+            router.push("/educationinfo/dashboard");
+            break;
+          case 6:
+            router.push("/addressinfo/dashboard");
+            break;
+          case 7:
+            router.push("/cibilinfo/dashboard");
+            break;
+          case 8:
+            router.push("/referenceinfo/dashboard");
+            break;
+          case 9:
+            router.push("/experienceinfo/dashboard");
+            break;
+          default:
+            setSnackbarMessage('Invalid user role.');
+            setSnackbarSeverity('error');
+            setSnackbarOpen(true);
+        }
+      }
+    };
+
+    document.getElementById('home-button').addEventListener('click', handleHomeClick);
+
+    return () => {
+      document.getElementById('home-button').removeEventListener('click', handleHomeClick);
+    };
+  }, []);
+
   return (
     <AppBar position="static" style={{ backgroundColor: '#f5f5f5' }}>
       <Toolbar>
         <Box sx={{ flexGrow: 1 }}>
           <Logo />
         </Box>
-        <Typography variant="h6" component="div" sx={{ flexGrow: 1, textAlign: 'center', color: 'blue', fontSize: '1rem' }}>
+        <Typography 
+          variant="h6" 
+          component="div" 
+          sx={{ flexGrow: 1, textAlign: 'center', color: 'blue', fontSize: '1rem', cursor: 'pointer' }}
+          id="home-button" // Add id for home button
+        >
           Home
         </Typography>
         <div>

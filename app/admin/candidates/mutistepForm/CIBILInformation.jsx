@@ -21,36 +21,38 @@ const CIBILInformation = ({ formData, setFormData }) => {
       const file = files[0];
       setFormData((prevData) => ({
         ...prevData,
-        [name]: file,  // Directly store the file object
+        [name]: file,
       }));
     }
   };
 
   const fields = [
-    { name: "pan_number", label: "PAN Number", type: "text" },
-    { name: "pan_card", label: "Upload PAN Card", type: "file" },
-    { name: "cibil_score", label: "CIBIL Score", type: "text" },
-    { name: "cibil_report", label: "Upload CIBIL Report", type: "file" },
-    { name: "aadhar_number", label: "Aadhar Number", type: "text" },
-    { name: "aadhar_card", label: "Upload Aadhar Card", type: "file" },
+    { name: 'pan_number', label: 'PAN Number', type: 'text' },
+    { name: 'pan_card', label: 'Upload PAN Card', type: 'file' },
+    { name: 'cibil_score', label: 'CIBIL Score', type: 'text' },
+    { name: 'cibil_report', label: 'Upload CIBIL Report', type: 'file' },
+    { name: 'aadhar_number', label: 'Aadhar Number', type: 'text' },
+    { name: 'aadhar_card', label: 'Upload Aadhar Card', type: 'file' },
   ];
 
   return (
     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px' }}>
       {fields.map((field, index) => (
         <div key={index} style={{ flex: '1 1 calc(25% - 16px)', minWidth: '200px' }}>
-          {field.type === "file" ? (
+          {field.type === 'file' ? (
             <div>
               <TextField
                 type="file"
                 name={field.name}
                 onChange={handleFileChange}
-                label={field.label}
                 variant="outlined"
                 fullWidth
                 margin="normal"
                 InputLabelProps={{ shrink: true }}
-                InputProps={{ inputProps: { accept: ".pdf, .png, .jpg, .jpeg" }, ref: fileInputRef }}
+                InputProps={{
+                  inputProps: { accept: '.pdf, .png, .jpg, .jpeg' },
+                  ref: fileInputRef,
+                }}
               />
               {formData[field.name] && formData[field.name] instanceof File && (
                 <div style={{ marginTop: '8px' }}>

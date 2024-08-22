@@ -8,8 +8,6 @@ const columns = [
   { field: 'dob', headerName: 'Date of Birth', width: 150 },
   { field: 'postal_id', headerName: 'Postal ID', width: 150 },
   { field: 'full_address', headerName: 'Full Address', width: 300 },
-  { field: 'highest_qualify', headerName: 'Highest Qualification', width: 200 },
-  { field: 'certificate_number', headerName: ' Highest Qualification Certificate Number', width: 200 },
   { field: 'pan_number', headerName: 'PAN Number', width: 200 },
   { field: 'aadhar_number', headerName: 'Aadhar Number', width: 200 },
   { field: 'ref_email', headerName: 'Reference Email', width: 250 },
