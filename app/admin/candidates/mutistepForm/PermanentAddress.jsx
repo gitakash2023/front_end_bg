@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { TextField, MenuItem } from "@mui/material";
+import { TextField, MenuItem, Button } from "@mui/material";
 import DateFormate from "../../../../common-components/DateFormate";
 
 const fields = [
@@ -17,26 +17,45 @@ const fields = [
 ];
 
 const AddressForm = ({ address, onChange, index, heading }) => {
+  const [filePreview, setFilePreview] = useState(null);
+  const [fileName, setFileName] = useState('');
+
   useEffect(() => {
-    // Update the state when the file is set
     if (address.address_proof_file) {
-      onChange(index, { ...address });
+      if (typeof address.address_proof_file === 'string') {
+        setFilePreview(address.address_proof_file);
+        setFileName('');
+      } else {
+        const fileUrl = URL.createObjectURL(address.address_proof_file);
+        setFilePreview(fileUrl);
+        setFileName(address.address_proof_file.name);
+
+        return () => URL.revokeObjectURL(fileUrl);
+      }
+    } else {
+      setFilePreview(null);
+      setFileName('');
     }
-  }, [address.address_proof_file, index, onChange]);
+  }, [address.address_proof_file]);
 
   const handleChange = (event) => {
     const { name, value, files } = event.target;
 
     if (files) {
       const file = files[0];
-      const formData = new FormData();
-      formData.append(name, file);
-
-      // Updating form data with the new file
-      onChange(index, { ...address, address_proof_file: formData.get(name) });
+      onChange(index, { ...address, [name]: file });
     } else {
-      // Updating form data with text values
       onChange(index, { ...address, [name]: value });
+    }
+  };
+
+  const handlePreviewClick = () => {
+    const fileUrl = address.address_proof_file && typeof address.address_proof_file === 'string'
+      ? address.address_proof_file
+      : filePreview;
+    
+    if (fileUrl) {
+      window.open(`https://bgv-backend.vitsinco.com/file?file=${fileUrl}`, '_blank');
     }
   };
 
@@ -73,9 +92,21 @@ const AddressForm = ({ address, onChange, index, heading }) => {
               />
             ) : field.type === "file" ? (
               <div>
-                {address.address_proof_file && (
+                {filePreview && (
                   <div style={{ marginBottom: '8px' }}>
-                    <strong>Uploaded file:</strong> {address.address_proof_file.name}
+                    <strong>Uploaded file:</strong>
+                    {filePreview.startsWith('data:image/') ? (
+                      <img src={filePreview} alt="Preview" style={{ maxWidth: '100px', maxHeight: '100px' }} />
+                    ) : (
+                      <>
+                        <Button variant="contained" color="primary" onClick={handlePreviewClick}>
+                          Preview
+                        </Button>
+                        <div style={{ marginTop: '8px' }}>
+                          <strong>File Name:</strong> {fileName}
+                        </div>
+                      </>
+                    )}
                   </div>
                 )}
                 <TextField
@@ -123,7 +154,7 @@ const AddressContainer = ({ formData, setFormData, candidate_id }) => {
           stay_from_date: "",
           stay_till_date: "",
           full_address: "",
-          address_proof_file: "",
+          address_proof_file: null,
           address_type: "current",
           candidate_id
         },
@@ -137,7 +168,7 @@ const AddressContainer = ({ formData, setFormData, candidate_id }) => {
           stay_from_date: "",
           stay_till_date: "",
           full_address: "",
-          address_proof_file: "",
+          address_proof_file: null,
           address_type: "permanent",
           candidate_id
         },
@@ -151,7 +182,7 @@ const AddressContainer = ({ formData, setFormData, candidate_id }) => {
           stay_from_date: "",
           stay_till_date: "",
           full_address: "",
-          address_proof_file: "",
+          address_proof_file: null,
           address_type: "previous",
           candidate_id
         }

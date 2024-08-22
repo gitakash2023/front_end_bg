@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation'; 
+import { useRouter } from 'next/navigation';
 import { AppBar, Toolbar, Typography, Box, IconButton, Menu, MenuItem, ListItemIcon, Snackbar, Alert } from '@mui/material';
 import AccountCircle from '@mui/icons-material/AccountCircle';
 import Logout from '@mui/icons-material/Logout';
@@ -94,12 +94,17 @@ const Header = () => {
       }
     };
 
-    document.getElementById('home-button').addEventListener('click', handleHomeClick);
+    const homeButton = document.getElementById('home-button');
+    if (homeButton) {
+      homeButton.addEventListener('click', handleHomeClick);
+    }
 
     return () => {
-      document.getElementById('home-button').removeEventListener('click', handleHomeClick);
+      if (homeButton) {
+        homeButton.removeEventListener('click', handleHomeClick);
+      }
     };
-  }, []);
+  }, [router]);
 
   return (
     <AppBar position="static" style={{ backgroundColor: '#f5f5f5' }}>
