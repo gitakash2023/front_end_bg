@@ -86,7 +86,7 @@ const AddressForm = ({ address, onChange, index, heading }) => {
                   <div style={{ marginBottom: "8px" }}>
                     <strong>Uploaded file:</strong>{" "}
                     {address.address_proof_file.name}
-                    <a href={`http://localhost:8080${address.address_proof_file}`}>preview</a>
+                    <a target="_blank" href={`https://bgv-backend.vitsinco.com${address.address_proof_file}`}>preview</a>
                   </div>
 
                 )}

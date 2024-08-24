@@ -78,7 +78,7 @@ const EducationForm = ({ education, onChange, index, heading }) => {
                 {education.certificate && (
                   <div style={{ marginBottom: '8px' }}>
                     <strong>Uploaded file:</strong> {education.certificate_name}
-                    <a href={`http://localhost:8080${education.certificate}`}>Preview</a>
+                    <a target="_blank"  href={`https://bgv-backend.vitsinco.com${education.certificate}`}>Preview</a>
                   </div>
                 )}
                 <TextField
@@ -92,7 +92,7 @@ const EducationForm = ({ education, onChange, index, heading }) => {
                   InputLabelProps={{ shrink: true }}
                   InputProps={{
                     inputProps: {
-                      accept: ".pdf,.doc,.docx"
+                      accept: ".pdf,.doc,.docx,.jpeg,.png,.jpg,.gif,.webp"
                     }
                   }}
                 />

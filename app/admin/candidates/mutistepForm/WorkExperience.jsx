@@ -85,7 +85,7 @@ const WorkExperienceForm = ({ workExperience, onChange, index, heading }) => {
                   <div style={{ marginBottom: '8px' }}>
                     <strong>Uploaded file:</strong> {workExperience[`${field.name}_name`]}
                     {workExperience[field.name] && (
-                      <a href={`http://localhost:8080${workExperience[field.name]}`} target="_blank" rel="noopener noreferrer"> Preview</a>
+                      <a  href={`https://bgv-backend.vitsinco.com${workExperience[field.name]}`} target="_blank" rel="noopener noreferrer"> Preview</a>
                     )}
                   </div>
                 )}
