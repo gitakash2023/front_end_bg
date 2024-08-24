@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { TextField, FormHelperText } from '@mui/material';
+import { TextField, FormHelperText, MenuItem } from '@mui/material';
 import DateFormate from "../../../../common-components/DateFormate";
 
 const workExperienceFields = [
@@ -19,41 +19,56 @@ const workExperienceFields = [
 
 const WorkExperienceForm = ({ workExperience, onChange, index, heading }) => {
   const [fileError, setFileError] = useState(null);
-
+  const [fileErrors, setFileErrors] = useState({});
   useEffect(() => {
-    if (workExperience.salarySlip) {
-      onChange(index, { ...workExperience, salarySlip_name: workExperience.salarySlip.name || "Uploaded file" });
+    // If any file fields change, update the parent component
+    if (workExperience.salarySlip || workExperience.relievingLetter || workExperience.experienceLetter) {
+      onChange(index, { ...workExperience });
     }
-    if (workExperience.relievingLetter) {
-      onChange(index, { ...workExperience, relievingLetter_name: workExperience.relievingLetter.name || "Uploaded file" });
-    }
-    if (workExperience.experienceLetter) {
-      onChange(index, { ...workExperience, experienceLetter_name: workExperience.experienceLetter.name || "Uploaded file" });
-    }
-  }, [workExperience, index, onChange]);
+  }, [workExperience.salarySlip, workExperience.relievingLetter, workExperience.experienceLetter, index, onChange]);
 
   const handleChange = (event) => {
     const { name, value, files } = event.target;
+
     if (files) {
       const file = files[0];
-      if (file.size > 5 * 1024 * 1024) { // 5MB limit
-        setFileError("File size exceeds 5MB.");
+      const fileName = file.name;
+      const fileType = file.type;
+      const allowedTypes = ["application/pdf", "image/png", "image/jpeg","application/docx"];
+      
+      // Validate file type
+      if (!allowedTypes.includes(fileType)) {
+        setFileErrors(prev => ({ ...prev, [name]: "Unsupported file type" }));
         return;
       }
-      if (!["application/pdf", "image/png", "image/jpeg"].includes(file.type)) {
-        setFileError("Invalid file type. Only PDF, PNG, JPG, JPEG are allowed.");
-        return;
-      }
-      setFileError(null);
-      onChange(index, { ...workExperience, [name]: file, [`${name}_name`]: file.name });
+
+      setFileErrors(prev => ({ ...prev, [name]: "" }));
+
+      const formData = new FormData();
+      formData.append(name, file);
+
+      // Update state with the file and its name
+      onChange(index, {
+        ...workExperience,
+        [`${name}_name`]: fileName,
+        [name]: formData.get(name),
+      });
     } else {
+      // Handle text input changes
       onChange(index, { ...workExperience, [name]: value });
     }
   };
 
+  
+
   return (
     <div className="my-5">
       <h2>{heading} Work Experience</h2>
+      <TextField
+        type="hidden"
+        name="candidate_id"
+        value={workExperience.candidate_id || ''}
+      />
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px' }}>
         {workExperienceFields.map((field, idx) => (
           <div key={idx} style={{ flex: '1 1 calc(50% - 16px)', minWidth: '300px' }}>
@@ -66,9 +81,12 @@ const WorkExperienceForm = ({ workExperience, onChange, index, heading }) => {
               />
             ) : field.type === "file" ? (
               <div>
-                {workExperience[`${field.name}_name`] && (
+                {workExperience[field.name] && (
                   <div style={{ marginBottom: '8px' }}>
                     <strong>Uploaded file:</strong> {workExperience[`${field.name}_name`]}
+                    {workExperience[field.name] && (
+                      <a href={`http://localhost:8080${workExperience[field.name]}`} target="_blank" rel="noopener noreferrer"> Preview</a>
+                    )}
                   </div>
                 )}
                 <TextField
@@ -108,7 +126,7 @@ const WorkExperienceForm = ({ workExperience, onChange, index, heading }) => {
   );
 };
 
-const WorkExperience = ({ formData, setFormData, candidate_id }) => {
+const WorkExperience = ({ formData, setFormData ,candidate_id}) => {
   useEffect(() => {
     if (formData.length === 0) {
       setFormData([
@@ -171,7 +189,7 @@ const WorkExperience = ({ formData, setFormData, candidate_id }) => {
         }
       ]);
     }
-  }, [formData, setFormData, candidate_id]);
+  }, [formData, setFormData]);
 
   const handleWorkExperienceChange = (index, updatedWorkExperience) => {
     setFormData(formData.map((workExperience, idx) => (idx === index ? updatedWorkExperience : workExperience)));

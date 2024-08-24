@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { TextField, MenuItem, Button } from "@mui/material";
+import { TextField, MenuItem } from "@mui/material";
 import DateFormate from "../../../../common-components/DateFormate";
 
 const fields = [
@@ -9,67 +9,57 @@ const fields = [
   { name: "district_id", label: "District", type: "text" },
   { name: "city_id", label: "City", type: "text" },
   { name: "postal_id", label: "Zip/Postal Code", type: "text" },
-  { name: "house_type", label: "House Type", type: "select", options: ["Owned", "Rented"] },
+  {
+    name: "house_type",
+    label: "House Type",
+    type: "select",
+    options: ["Owned", "Rented"],
+  },
   { name: "stay_from_date", label: "Stay From Date", type: "date" },
   { name: "stay_till_date", label: "Stay Till Date", type: "date" },
   { name: "full_address", label: "Full Address", type: "text" },
-  { name: "address_proof_file", label: "Upload Address Proof", type: "file" }
+  { name: "address_proof_file", label: "Upload Address Proof", type: "file" },
 ];
 
 const AddressForm = ({ address, onChange, index, heading }) => {
-  const [filePreview, setFilePreview] = useState(null);
-  const [fileName, setFileName] = useState('');
-
   useEffect(() => {
+    // Update the state when the file is set
     if (address.address_proof_file) {
-      if (typeof address.address_proof_file === 'string') {
-        setFilePreview(address.address_proof_file);
-        setFileName('');
-      } else {
-        const fileUrl = URL.createObjectURL(address.address_proof_file);
-        setFilePreview(fileUrl);
-        setFileName(address.address_proof_file.name);
-
-        return () => URL.revokeObjectURL(fileUrl);
-      }
-    } else {
-      setFilePreview(null);
-      setFileName('');
+      onChange(index, { ...address });
     }
-  }, [address.address_proof_file]);
+  }, [address.address_proof_file, index, onChange]);
 
   const handleChange = (event) => {
     const { name, value, files } = event.target;
 
     if (files) {
+      console.log(files);
       const file = files[0];
-      onChange(index, { ...address, [name]: file });
-    } else {
-      onChange(index, { ...address, [name]: value });
-    }
-  };
+      const formData = new FormData();
+      formData.append(name, file);
 
-  const handlePreviewClick = () => {
-    const fileUrl = address.address_proof_file && typeof address.address_proof_file === 'string'
-      ? address.address_proof_file
-      : filePreview;
-    
-    if (fileUrl) {
-      window.open(`https://bgv-backend.vitsinco.com/file?file=${fileUrl}`, '_blank');
+      // Updating form data with the new file
+      onChange(index, { ...address, address_proof_file: formData.get(name) });
+    } else {
+      // Updating form data with text values
+      onChange(index, { ...address, [name]: value });
     }
   };
 
   return (
     <div className="my-5">
       <h2>{heading} Address</h2>
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px' }}>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: "16px" }}>
         {fields.map((field, fieldIndex) => (
-          <div key={fieldIndex} style={{ flex: '1 1 calc(50% - 16px)', minWidth: '200px' }}>
+          <div
+            key={fieldIndex}
+            style={{ flex: "1 1 calc(50% - 16px)", minWidth: "200px" }}
+          >
             {field.type === "select" ? (
               <TextField
                 select
                 name={field.name}
-                value={address[field.name] || ''}
+                value={address[field.name] || ""}
                 onChange={handleChange}
                 label={field.label}
                 variant="outlined"
@@ -92,22 +82,13 @@ const AddressForm = ({ address, onChange, index, heading }) => {
               />
             ) : field.type === "file" ? (
               <div>
-                {filePreview && (
-                  <div style={{ marginBottom: '8px' }}>
-                    <strong>Uploaded file:</strong>
-                    {filePreview.startsWith('data:image/') ? (
-                      <img src={filePreview} alt="Preview" style={{ maxWidth: '100px', maxHeight: '100px' }} />
-                    ) : (
-                      <>
-                        <Button variant="contained" color="primary" onClick={handlePreviewClick}>
-                          Preview
-                        </Button>
-                        <div style={{ marginTop: '8px' }}>
-                          <strong>File Name:</strong> {fileName}
-                        </div>
-                      </>
-                    )}
+                {address.address_proof_file && (
+                  <div style={{ marginBottom: "8px" }}>
+                    <strong>Uploaded file:</strong>{" "}
+                    {address.address_proof_file.name}
+                    <a href={`http://localhost:8080${address.address_proof_file}`}>preview</a>
                   </div>
+
                 )}
                 <TextField
                   type="file"
@@ -119,12 +100,14 @@ const AddressForm = ({ address, onChange, index, heading }) => {
                   margin="normal"
                   InputLabelProps={{ shrink: true }}
                 />
+               
               </div>
+              
             ) : (
               <TextField
                 type={field.type}
                 name={field.name}
-                value={address[field.name] || ''}
+                value={address[field.name] || ""}
                 onChange={handleChange}
                 label={field.label}
                 variant="outlined"
@@ -154,9 +137,9 @@ const AddressContainer = ({ formData, setFormData, candidate_id }) => {
           stay_from_date: "",
           stay_till_date: "",
           full_address: "",
-          address_proof_file: null,
+          address_proof_file: "",
           address_type: "current",
-          candidate_id
+          candidate_id,
         },
         {
           country_id: "",
@@ -168,9 +151,9 @@ const AddressContainer = ({ formData, setFormData, candidate_id }) => {
           stay_from_date: "",
           stay_till_date: "",
           full_address: "",
-          address_proof_file: null,
+          address_proof_file: "",
           address_type: "permanent",
-          candidate_id
+          candidate_id,
         },
         {
           country_id: "",
@@ -182,18 +165,18 @@ const AddressContainer = ({ formData, setFormData, candidate_id }) => {
           stay_from_date: "",
           stay_till_date: "",
           full_address: "",
-          address_proof_file: null,
+          address_proof_file: "",
           address_type: "previous",
-          candidate_id
-        }
+          candidate_id,
+        },
       ]);
     }
   }, [formData, setFormData, candidate_id]);
 
   const handleAddressChange = (index, updatedAddress) => {
-    setFormData(formData.map((address, idx) =>
-      idx === index ? updatedAddress : address
-    ));
+    setFormData(
+      formData.map((address, idx) => (idx === index ? updatedAddress : address))
+    );
   };
 
   return (

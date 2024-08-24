@@ -12,19 +12,19 @@ import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
 import GeneralInformation from "./GeneralInformation";
 import AddressContainer from "./PermanentAddress";
+import Education from "./Education";
 import CIBILInformation from "./CIBILInformation";
 import OtherReferenceInformation from "./OtherReferenceInformation";
 import WorkExperience from "./WorkExperience";
-import EducationContainer from "./Education";
 import { _create, _update, _getById } from "../../../../utils/apiUtils";
 import { useRouter, useSearchParams } from "next/navigation";
 import Header from "@/common-components/Header";
-import CustomButton from "@/common-components/CustomButton";
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import CustomButton from "@/common-components/CustomButton"; 
+import ArrowBackIcon from '@mui/icons-material/ArrowBack'; 
 
 const steps = [
   "General Information",
-  "Permanent Address",
+  "Permanent Address", 
   "Education",
   "CIBIL Information",
   "Work Experience",
@@ -60,19 +60,15 @@ const MainForm = () => {
     }
   }, [activeStep, candidateId]);
 
-  const userRole = localStorage.getItem('userRole');
-  console.log("userRole",userRole)
-
   const fetchStepData = async (candidateId, step) => {
     if (candidateId && step >= 0 && step < stepEndpoints.length) {
       try {
         setIsLoading(true);
-        const data = await _getById(stepEndpoints[step], candidateId);
-        if (Array.isArray(data)) {
-          setStepData(data);
-        } else {
-          setStepData([data]);
-        }
+        console.log(`Fetching data for step ${step} with candidateId ${candidateId}`);
+        let data = await _getById(stepEndpoints[step], candidateId);
+        console.log(`Data fetched for step ${step}:`, data);
+        data = data || (Array.isArray(data) ? [] : {});
+        setStepData(data);
       } catch (error) {
         console.error(`Failed to fetch data for step ${step}`, error);
       } finally {
@@ -83,65 +79,91 @@ const MainForm = () => {
 
   const handleNext = async () => {
     setIsLoading(true);
+    let newlyCreatedCandidateId = null;
+  
     try {
-      if (stepData.length > 1) {
+      // Check if we need to create or update data
+      if (Array.isArray(stepData)) {
         for (let item of stepData) {
           if (item.id) {
+            console.log(`Updating data for step ${activeStep}`);
             await _update(stepEndpoints[activeStep], item.id, item);
           } else {
+            console.log(`Creating new data for step ${activeStep}`);
             const createdData = await _create(stepEndpoints[activeStep], item);
+            console.log(`Data created:`, createdData);
             if (activeStep === 0) {
               setCandidateId(createdData.id);
+              newlyCreatedCandidateId = createdData.id;
+            }
+            if(activeStep === 0 && createdData.isError){
+              setDialogMessage(createdData.msg || "Failed to save data. Please try again.");
+              setSuccess(false);
+              setDialogOpen(true);
+              return;
             }
           }
         }
-      } else if (stepData.length === 1) {
-        const item = stepData[0];
-        if (item.id) {
-          await _update(stepEndpoints[activeStep], item.id, item);
+      } else {
+        if (stepData.id) {
+          console.log(`Updating data for step ${activeStep}`);
+          await _update(stepEndpoints[activeStep], stepData.id, stepData);
         } else {
-          const createdData = await _create(stepEndpoints[activeStep], item);
+          console.log(`Creating new data for step ${activeStep}`);
+          const createdData = await _create(stepEndpoints[activeStep], stepData);
+          console.log(`Data created:`, createdData);
           if (activeStep === 0) {
             setCandidateId(createdData.id);
+            newlyCreatedCandidateId = createdData.id;
+          }
+          if(activeStep === 0 && createdData.isError){
+            setDialogMessage(createdData.msg || "Failed to save data. Please try again.");
+            setSuccess(false);
+            setDialogOpen(true);
+            return;
           }
         }
       }
-
+      // Reset data and move to the next step
       setStepData([]);
       const nextStep = activeStep + 1;
-      
+      setActiveStep(nextStep);
       if (nextStep < steps.length) {
-        setActiveStep(nextStep);
-        router.push(`/admin/candidates/add-candidates?id=${candidateId}&step=${nextStep}`);
-        fetchStepData(candidateId, nextStep);
+        fetchStepData(newlyCreatedCandidateId || candidateId, nextStep);
       } else {
-        // Ensure success dialog appears
-        showDialog("All steps completed successfully!", true);
-        setTimeout(() => {
-          if (userRole === '1') {
-            router.push('/admin/admin-dashboard');
-          } else {
-            // Add redirection logic for other roles if needed
-          }
-        }, 2000); // Delay to show the dialog before redirecting
+        setDialogMessage("All steps completed successfully!");
+        setSuccess(true);
+        setDialogOpen(true);
       }
     } catch (error) {
       console.error("Failed to save data", error);
-      showDialog("Failed to save data. Please try again.", false);
+      setDialogMessage("Failed to save data. Please try again.");
+      setSuccess(false);
+      setDialogOpen(true);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleBack = () => {
-    const previousStep = activeStep - 1;
-    setActiveStep(previousStep);
-    router.push(`/admin/candidates/add-candidates?id=${candidateId}&step=${previousStep}`);
-    fetchStepData(candidateId, previousStep);
+  const handleBack = async () => {
+    setIsLoading(true);
+    try {
+      const previousStep = activeStep - 1;
+      setActiveStep(previousStep);
+      router.push(`/admin/candidates/add-candidates?id=${candidateId}&step=${previousStep}`);
+      fetchStepData(candidateId, previousStep);
+    } catch (error) {
+      console.error("Failed to go back", error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleCloseDialog = () => {
     setDialogOpen(false);
+    // if (success) {
+    //   router.push("/admin/candidates");
+    // }
   };
 
   const handleGoToLastStep = () => {
@@ -151,28 +173,22 @@ const MainForm = () => {
     fetchStepData(candidateId, lastStep);
   };
 
-  const showDialog = (message, isSuccess) => {
-    setDialogMessage(message);
-    setSuccess(isSuccess);
-    setDialogOpen(true);
-  };
-
   const getStepContent = (step) => {
     switch (step) {
       case 0:
-        return <GeneralInformation formData={stepData} setFormData={setStepData} candidate_id={candidateId} />;
+        return <GeneralInformation formData={stepData} setFormData={setStepData} />;
       case 1:
         return <AddressContainer formData={stepData} setFormData={setStepData} candidate_id={candidateId} />;
       case 2:
-        return <EducationContainer formData={stepData} setFormData={setStepData} candidate_id={candidateId} />;
+        return <Education formData={stepData} setFormData={setStepData} candidate_id={candidateId} />;
       case 3:
-        return <CIBILInformation formData={stepData[0] || {}} setFormData={(data) => setStepData([data])} candidate_id={candidateId} />;
+        return <CIBILInformation formData={stepData} setFormData={setStepData} candidate_id={candidateId} />;
       case 4:
         return <WorkExperience formData={stepData} setFormData={setStepData} candidate_id={candidateId} />;
       case 5:
         return <OtherReferenceInformation formData={stepData} setFormData={setStepData} candidate_id={candidateId} />;
       default:
-        return null;
+        return "Unknown step";
     }
   };
 

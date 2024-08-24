@@ -3,18 +3,18 @@ import TextField from '@mui/material/TextField';
 
 const OtherReferenceInformation = ({ formData, setFormData }) => {
 
+
   const handleChange = (e) => {
     const { name, value } = e.target;
-    console.log(`Changing ${name} to ${value}`); // Debugging
+
     setFormData((prevData) => ({
       ...prevData,
-      [name]: value,
+      [0]: { // Update the first item in formData array
+        ...prevData[0],
+        [name]: value,
+      },
     }));
   };
-
-  React.useEffect(() => {
-    console.log("Component re-rendered with formData:", formData); // Debugging
-  }, [formData]);
 
   const fields = [
     { name: "ref_name", label: "Reference Name", type: "text" },
@@ -25,6 +25,11 @@ const OtherReferenceInformation = ({ formData, setFormData }) => {
     { name: "ref_relationship", label: "Relationship to Candidate", type: "text" },
   ];
 
+  // Return null if formData[0] does not exist
+  if (!formData[0]) {
+    return null;
+  }
+
   return (
     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px' }}>
       {fields.map((field, index) => (
@@ -32,13 +37,12 @@ const OtherReferenceInformation = ({ formData, setFormData }) => {
           <TextField
             type={field.type}
             name={field.name}
-            value={formData[field.name] || ''} // Ensure this is set correctly
+            value={formData[0][field.name] || ''} // Use formData[0] for the value
             onChange={handleChange}
             label={field.label}
             variant="outlined"
             fullWidth
             margin="normal"
-            InputLabelProps={{ shrink: true }}
           />
         </div>
       ))}

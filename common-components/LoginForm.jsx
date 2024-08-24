@@ -1,15 +1,8 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import {
-  TextField,
-  Button,
-  Typography,
-  CircularProgress,
-  Box,
-  Container,
-} from "@mui/material";
+import { TextField, Button, Grid, Typography, CircularProgress, Box, Container } from "@mui/material";
 import { FaUser, FaLock } from "react-icons/fa";
 import { _createlogin } from "../utils/apiUtils";
 import Logo from "./header-components/Logo";
@@ -32,38 +25,22 @@ const LoginPage = () => {
   };
 
   const handleSubmit = async (e) => {
+
+  
+
+      const urlParams = new URLSearchParams(window.location.search);
+      const id = urlParams.get("id");
+      console.log(id);
+
     e.preventDefault();
     setLoading(true);
 
     try {
       const response = await _createlogin("/users/login", formData);
-
-      const { user_role, token, username, user_id } = response;
-
-      // Store details on the client side (browser)
-      if (typeof window !== "undefined") {
-        localStorage.setItem(
-          "userDetails",
-          JSON.stringify({ username, user_role, token, user_id })
-        );
-      }
-
-      // Optionally, store details in cookies on the server side as a fallback
-      if (typeof window === "undefined") {
-        // Example of setting a cookie on the server-side (pseudo-code)
-        // This could be done through an API call that sets cookies
-        document.cookie = `userDetails=${JSON.stringify({
-          username,
-          user_role,
-          token,
-          user_id,
-        })}; path=/;`;
-      }
-
+      const { user_role } = response;
       setFormData({ username: "", password: "" });
       setError(null);
 
-      // Redirect based on user role
       switch (user_role) {
         case 1:
           router.push("/admin/admin-dashboard");
@@ -72,7 +49,11 @@ const LoginPage = () => {
           router.push("/client/client-dashboard");
           break;
         case 3:
-          router.push("/admin/candidates/add-candidates");
+          if(id){
+           router.push(`/admin/candidates/add-candidates?id=${id}`);
+          }else{
+            router.push(`/admin/candidates/add-candidates`);
+          }
           break;
         case 4:
           router.push("/geninfo/dashboard");
@@ -89,9 +70,9 @@ const LoginPage = () => {
         case 8:
           router.push("/referenceinfo/dashboard");
           break;
-        case 9:
-          router.push("/experienceinfo/dashboard");
-          break;
+          case 9:
+            router.push("/experienceinfo/dashboard");
+            break;
         default:
           setError("Invalid user role.");
       }
@@ -103,32 +84,23 @@ const LoginPage = () => {
   };
 
   return (
-    <Container
-      maxWidth="sm"
-      sx={{
-        height: "100vh",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        backgroundColor: "#f8f9fa",
-      }}
-    >
+    <Container maxWidth="sm" sx={{ height: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundColor: '#f8f9fa' }}>
       <Box
         sx={{
           padding: 4,
-          backgroundColor: "#ffffff",
+          backgroundColor: '#ffffff',
           borderRadius: 2,
           boxShadow: 3,
-          width: "100%",
+          width: '100%',
           maxWidth: 400,
-          textAlign: "center",
+          textAlign: 'center',
         }}
       >
         <Logo sx={{ mb: 4 }} />
         <Typography
           variant="h4"
           gutterBottom
-          sx={{ fontWeight: "bold", color: "#1976d2" }}
+          sx={{ fontWeight: 'bold', color: '#1976d2' }}
         >
           Login
         </Typography>
@@ -146,8 +118,8 @@ const LoginPage = () => {
               startAdornment: <FaUser style={{ marginRight: 8 }} />,
             }}
             sx={{
-              backgroundColor: "#f0f2f5",
-              fontSize: "0.9rem",
+              backgroundColor: '#f0f2f5',
+              fontSize: '0.9rem',
               mb: 2,
             }}
           />
@@ -165,8 +137,8 @@ const LoginPage = () => {
               startAdornment: <FaLock style={{ marginRight: 8 }} />,
             }}
             sx={{
-              backgroundColor: "#f0f2f5",
-              fontSize: "0.9rem",
+              backgroundColor: '#f0f2f5',
+              fontSize: '0.9rem',
               mb: 2,
             }}
           />
@@ -178,7 +150,7 @@ const LoginPage = () => {
               fullWidth
               variant="contained"
               color="primary"
-              sx={{ fontSize: "0.9rem", marginTop: 2 }}
+              sx={{ fontSize: '0.9rem', marginTop: 2 }}
             >
               Login
             </Button>
@@ -192,7 +164,7 @@ const LoginPage = () => {
         <Typography variant="body2" sx={{ mt: 2 }}>
           <span>Forgot Password? </span>
           <Link href="/auth/forgot-password">
-            <span style={{ textDecoration: "none", color: "#1976d2" }}>
+            <span style={{ textDecoration: 'none', color: '#1976d2' }}>
               Reset it here
             </span>
           </Link>

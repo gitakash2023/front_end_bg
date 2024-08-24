@@ -9,6 +9,8 @@ const handleApiError = (error) => {
 
 export const BASE_URL = "https://bgv-backend.vitsinco.com";
 
+// export const BASE_URL = "http://localhost:8080";
+
 // Function to retrieve all posts
 export const _getAll = async (endpoint) => {
   try {
@@ -46,6 +48,7 @@ export const _createlogin = async (endpoint, postData) => {
 export const _getById = async (endpoint, id) => {
   try {
     const response = await axios.get(`${BASE_URL}${endpoint}/${id}`);
+    console.log(response.data);
     return response.data;
   } catch (error) {
     handleApiError(error);
@@ -54,10 +57,20 @@ export const _getById = async (endpoint, id) => {
 
 // Function to update a post
 export const _update = async (endpoint, id, postData) => {
+  console.log(postData);
+
   try {
     const response = await axios.put(
       `${BASE_URL}${endpoint}`,
-      { id, ...postData }
+      {
+        id,
+        ...postData,
+      },
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      }
     );
     return response.data;
   } catch (error) {
@@ -68,10 +81,7 @@ export const _update = async (endpoint, id, postData) => {
 // Function to delete a post by ID
 export const _delete = async (endpoint, id) => {
   try {
-    await axios.delete(
-      `${BASE_URL}${endpoint}`,
-      { data: { id } }
-    );
+    await axios.delete(`${BASE_URL}${endpoint}`, { data: { id } });
     return true;
   } catch (error) {
     handleApiError(error);

@@ -29,6 +29,14 @@ export default function CandidateList() {
     const fetchData = async () => {
         try {
             const data = await _getAll('/candidate');
+
+            if (data.length > 0 && data[0].education_type) {
+                console.log("Education Type at index 0:", data[0].education_type);
+            } else {
+                console.log("No data or education_type is not available at index 0.");
+            }
+
+
             const formattedData = data.map(item => ({
                 id: item.id,
                 name: item.name,
@@ -39,8 +47,8 @@ export default function CandidateList() {
                 dob: item.dob,
                 postal_id: item.CandidteAddresses[0]?.postal_id || 'N/A',
                 full_address: item.CandidteAddresses[0]?.full_address || 'N/A',
-                highest_qualify: item.CandidteEductions[0]?.highest_qualify || 'N/A',
-                certificate_number: item.CandidteEductions[0]?.certificate_number || 'N/A',
+                // highest_qualify: item.CandidteEductions[0]?.highest_qualify || 'N/A',
+                // certificate_number: item.CandidteEductions[0]?.certificate_number || 'N/A',
                 pan_number: item.CandidteCibils[0]?.pan_number || 'N/A',
                 aadhar_number: item.CandidteCibils[0]?.aadhar_number || 'N/A',
                 ref_email: item.CandidteReferences[0]?.ref_email || 'N/A',

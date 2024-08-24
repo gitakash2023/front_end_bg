@@ -1,91 +1,128 @@
-import React, { useRef } from 'react';
-import TextField from '@mui/material/TextField';
-import Button from '@mui/material/Button';
-import Typography from '@mui/material/Typography';
+"use client";
+import React, { useState, useEffect } from "react";
+import { TextField, MenuItem, FormHelperText, Button } from "@mui/material";
+import DateFormate from "../../../../common-components/DateFormate";
 
-const CIBILInformation = ({ formData, setFormData }) => {
-  const fileInputRef = useRef(null);
+const cibilFields = [
+  { name: "pan_number", label: "PAN Number", type: "text" },
+  { name: "pan_card", label: "Upload PAN Card", type: "file" },
+  { name: "cibil_score", label: "CIBIL Score", type: "text" },
+  { name: "cibil_report", label: "Upload CIBIL Report", type: "file" },
+  { name: "aadhar_number", label: "Aadhar Number", type: "text" },
+  { name: "aadhar_card", label: "Upload Aadhar Card", type: "file" },
+];
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prevData) => ({
-      ...prevData,
-      [name]: value,
-    }));
-  };
+const CIBILForm = ({ cibil, onChange, index, heading }) => {
+  const [fileError, setFileError] = useState(null);
 
-  const handleFileChange = (event) => {
-    const { name, files } = event.target;
+  useEffect(() => {
+    // Update the state when any file is set
+    const fileFields = ['pan_card', 'cibil_report', 'aadhar_card'];
+    fileFields.forEach(field => {
+      if (cibil[field]) {
+        onChange(index, { ...cibil });
+      }
+    });
+  }, [cibil.pan_card, cibil.cibil_report, cibil.aadhar_card, index, onChange]);
 
-    if (files && files[0]) {
+  const handleChange = (event) => {
+    const { name, value, files } = event.target;
+
+    if (files) {
       const file = files[0];
-      setFormData((prevData) => ({
-        ...prevData,
-        [name]: file,
-      }));
+      const formData = new FormData();
+      formData.append(name, file);
+
+      // Updating form data with the new file
+      onChange(index, { ...cibil, [name]: formData.get(name) });
+    } else {
+      // Updating form data with text values
+      onChange(index, { ...cibil, [name]: value });
     }
   };
 
-  const fields = [
-    { name: 'pan_number', label: 'PAN Number', type: 'text' },
-    { name: 'pan_card', label: 'Upload PAN Card', type: 'file' },
-    { name: 'cibil_score', label: 'CIBIL Score', type: 'text' },
-    { name: 'cibil_report', label: 'Upload CIBIL Report', type: 'file' },
-    { name: 'aadhar_number', label: 'Aadhar Number', type: 'text' },
-    { name: 'aadhar_card', label: 'Upload Aadhar Card', type: 'file' },
-  ];
-
   return (
-    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px' }}>
-      {fields.map((field, index) => (
-        <div key={index} style={{ flex: '1 1 calc(25% - 16px)', minWidth: '200px' }}>
-          {field.type === 'file' ? (
-            <div>
+    <div className="my-5">
+      <h2>{heading} CIBIL Information</h2>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px' }}>
+        {cibilFields.map((field, idx) => (
+          <div key={idx} style={{ flex: '1 1 calc(50% - 16px)', minWidth: '200px' }}>
+            {field.type === "file" ? (
+              <div>
+                {cibil[`${field.name}_name`] && (
+                  <div style={{ marginBottom: '8px' }}>
+                    <strong>Uploaded file:</strong> {cibil[`${field.name}_name`]}
+                    
+                  </div>
+                )}
+                <TextField
+                  type="file"
+                  name={field.name}
+                  onChange={handleChange}
+                  label={field.label}
+                  variant="outlined"
+                  fullWidth
+                  margin="normal"
+                  InputLabelProps={{ shrink: true }}
+                  InputProps={{
+                    inputProps: {
+                      accept: ".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                    }
+                  }}
+                />
+                {fileError && <FormHelperText error>{fileError}</FormHelperText>}
+              </div>
+            ) : (
               <TextField
-                type="file"
+                type={field.type}
                 name={field.name}
-                onChange={handleFileChange}
+                value={cibil[field.name] || ''}
+                onChange={handleChange}
+                label={field.label}
                 variant="outlined"
                 fullWidth
                 margin="normal"
                 InputLabelProps={{ shrink: true }}
-                InputProps={{
-                  inputProps: { accept: '.pdf, .png, .jpg, .jpeg' },
-                  ref: fileInputRef,
-                }}
               />
-              {formData[field.name] && formData[field.name] instanceof File && (
-                <div style={{ marginTop: '8px' }}>
-                  <Typography variant="body2">
-                    <strong>Uploaded File:</strong> {formData[field.name].name}
-                  </Typography>
-                  <Button
-                    variant="outlined"
-                    color="primary"
-                    href={URL.createObjectURL(formData[field.name])}
-                    download={formData[field.name].name}
-                    target="_blank"
-                    style={{ marginTop: '4px' }}
-                  >
-                    Download
-                  </Button>
-                </div>
-              )}
-            </div>
-          ) : (
-            <TextField
-              type={field.type}
-              name={field.name}
-              value={formData[field.name] || ''}
-              onChange={handleChange}
-              label={field.label}
-              variant="outlined"
-              fullWidth
-              margin="normal"
-              InputLabelProps={{ shrink: true }}
-            />
-          )}
-        </div>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+const CIBILInformation = ({ formData, setFormData, candidate_id }) => {
+  useEffect(() => {
+    if (formData.length === 0) {
+      setFormData([
+        {
+          pan_number: '',
+          pan_card: null,
+          cibil_score: '',
+          cibil_report: null,
+          aadhar_number: '',
+          aadhar_card: null,
+          candidate_id
+        }
+      ]);
+    }
+  }, [formData, setFormData, candidate_id]);
+
+  const handleCIBILChange = (index, updatedCIBIL) => {
+    setFormData(formData.map((cibil, idx) => (idx === index ? updatedCIBIL : cibil)));
+  };
+
+  return (
+    <div>
+      {formData.map((cibil, index) => (
+        <CIBILForm
+          key={index}
+          cibil={cibil}
+          onChange={handleCIBILChange}
+          index={index}
+          heading="Candidate"
+        />
       ))}
     </div>
   );
