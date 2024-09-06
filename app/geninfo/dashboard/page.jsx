@@ -1,23 +1,34 @@
 "use client";
-import React, { useState, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { DataGrid } from '@mui/x-data-grid';
 import Button from '@mui/material/Button';
 import { Box, Typography, Paper, MenuItem, Select, InputLabel, FormControl, TextField } from '@mui/material';
 import { CSVLink } from 'react-csv';
-
-// Initial dummy data based on the provided fields
-const initialRows = [
-  { id: 1, name: "John Doe", gender: "Male", dob: "1990-01-01", father_name: "Michael Doe", mobile_no: "1234567890", email_id: "john.doe@example.com", status: 'Unverified' },
-  { id: 2, name: "Jane Smith", gender: "Female", dob: "1985-05-15", father_name: "Robert Smith", mobile_no: "0987654321", email_id: "jane.smith@example.com", status: 'Unverified' },
-  { id: 3, name: "Alice Johnson", gender: "Female", dob: "1992-11-22", father_name: "William Johnson", mobile_no: "4567891230", email_id: "alice.johnson@example.com", status: 'Unverified' },
-  { id: 4, name: "Bob Brown", gender: "Male", dob: "1988-07-30", father_name: "George Brown", mobile_no: "3216549870", email_id: "bob.brown@example.com", status: 'Unverified' },
-  { id: 5, name: "Charlie Davis", gender: "Other", dob: "1995-03-18", father_name: "Paul Davis", mobile_no: "7894561230", email_id: "charlie.davis@example.com", status: 'Unverified' },
-];
+import { _getAll } from '../../../utils/apiUtils'; // Import the API utility function
 
 const GenInfoDashboard = () => {
-  const [rows, setRows] = useState(initialRows);
+  const [rows, setRows] = useState([]);
   const [statusFilter, setStatusFilter] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
+  const [loading, setLoading] = useState(true); // Add a loading state
+  const [error, setError] = useState(null); // Add an error state
+
+  // Fetch data from API on component mount
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const fetchedData = await _getAll('/candidate');
+        setRows(fetchedData || []); // Ensure it handles empty responses
+      } catch (error) {
+        console.error('Error fetching data:', error);
+        setError('Failed to fetch data');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   const handleAction = useCallback((event, id) => {
     event.stopPropagation(); // Stop the row from being selected
@@ -69,6 +80,9 @@ const GenInfoDashboard = () => {
       ),
     },
   ];
+
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div>Error: {error}</div>;
 
   return (
     <Box sx={{ p: 3, borderRadius: '8px', border: '1px solid #ddd', backgroundColor: '#fff', boxShadow: 2 }}>

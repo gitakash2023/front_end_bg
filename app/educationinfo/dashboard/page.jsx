@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback,useEffect } from 'react';
 import { DataGrid } from '@mui/x-data-grid';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
@@ -10,54 +10,50 @@ import FormControl from '@mui/material/FormControl';
 import { CSVLink } from 'react-csv';
 import { Box, Typography, Paper } from '@mui/material';
 
-const initialEducationRows = [
-  {
-    id: 1,
-    candidate_id: "C001",
-    name: "John Doe",
-    father_name: "Michael Doe",
-    dob: "1990-01-01",
-    course_name: "Computer Science",
-    university_name: "University of Delhi",
-    country: "India",
-    state: "Delhi",
-    city: "New Delhi",
-    duration_start: "2010-01-01",
-    duration_end: "2014-12-31",
-    passing_year: "2014-06-15",
-    gpa_percentage: "85%",
-    roll_number: "CS12345",
-    certificate_number: "CERT001",
-    certificate: "certificate1.pdf",
-    status: 'Unverified'
-  },
-  {
-    id: 2,
-    candidate_id: "C002",
-    name: "Jane Smith",
-    father_name: "Robert Smith",
-    dob: "1985-05-15",
-    course_name: "Mechanical Engineering",
-    university_name: "IIT Bombay",
-    country: "India",
-    state: "Maharashtra",
-    city: "Mumbai",
-    duration_start: "2011-01-01",
-    duration_end: "2015-12-31",
-    passing_year: "2015-06-15",
-    gpa_percentage: "90%",
-    roll_number: "ME67890",
-    certificate_number: "CERT002",
-    certificate: "certificate2.pdf",
-    status: 'Unverified'
-  },
-  // Add more rows as needed
-];
+import { _getAll } from '../../../utils/apiUtils';
+
 
 const EducationInfoDashboard = () => {
-  const [rows, setRows] = useState(initialEducationRows);
-  const [statusFilter, setStatusFilter] = useState('All');
-  const [searchQuery, setSearchQuery] = useState('');
+  const [rows, setRows] = useState([]);
+const [statusFilter, setStatusFilter] = useState('All');
+const [searchQuery, setSearchQuery] = useState('');
+
+useEffect(() => {
+  const fetchData = async () => {
+    try {
+      const response = await _getAll("/candidate");
+      console.log("response", response);
+
+      const data = response.map((item) => ({
+        candidate_id: item.user_id,
+        name: item.name,
+        father_name: item.father_name,
+        dob: item.dob ? item.dob.split('T')[0] : '', 
+        id: item.CandidateEducations ? item.CandidateEducations.map(education => education.id || '') : [],
+        course_name: item.CandidateEducations ? item.CandidateEducations.map(education => education.course_name || '') : [],
+        university_name: item.CandidateEducations ? item.CandidateEducations.map(education => education.university_name || '') : [],
+        country: item.CandidateEducations ? item.CandidateEducations.map(education => education.country || '') : [],
+        state: item.CandidateEducations ? item.CandidateEducations.map(education => education.state || '') : [],
+        city: item.CandidateEducations ? item.CandidateEducations.map(education => education.city || '') : [],
+        // duration_start: item.CandidateEducations ? item.CandidateEducations.map(education => education.duration_start || '') : [],
+        // duration_end: item.CandidateEducations ? item.CandidateEducations.map(education => education.duration_end || '') : [],
+        passing_year: item.CandidateEducations ? item.CandidateEducations.map(education => education.passing_year || '') : [],
+        gpa_percentage: item.CandidateEducations ? item.CandidateEducations.map(education => education.gpa_percentage || '') : [],
+        roll_number: item.CandidateEducations ? item.CandidateEducations.map(education => education.roll_number || '') : [],
+        certificate_number: item.CandidateEducations ? item.CandidateEducations.map(education => education.certificate_number || '') : [],
+        status: 'Unverified',
+      }));
+
+      console.log(data);
+      setRows(data);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
+
+  fetchData();
+}, []);
+
 
   const handleAction = useCallback((event, id) => {
     event.stopPropagation(); // Stop the row from being selected
@@ -97,13 +93,13 @@ const EducationInfoDashboard = () => {
     { field: 'country', headerName: 'Country', width: 150 },
     { field: 'state', headerName: 'State', width: 150 },
     { field: 'city', headerName: 'City', width: 150 },
-    { field: 'duration_start', headerName: 'Start Year', width: 150 },
-    { field: 'duration_end', headerName: 'End Year', width: 150 },
+    // { field: 'duration_start', headerName: 'Start Year', width: 150 },
+    // { field: 'duration_end', headerName: 'End Year', width: 150 },
     { field: 'passing_year', headerName: 'Passing Year', width: 150 },
     { field: 'gpa_percentage', headerName: 'GPA/Percentage', width: 150 },
     { field: 'roll_number', headerName: 'Roll Number', width: 150 },
     { field: 'certificate_number', headerName: 'Certificate Number', width: 200 },
-    { field: 'certificate', headerName: 'Certificate', width: 200 },
+    // { field: 'certificate', headerName: 'Certificate', width: 200 },
     { field: 'status', headerName: 'Final Status', width: 150 },
     {
       field: 'actions',

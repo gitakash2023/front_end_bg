@@ -73,8 +73,17 @@ export const fields = [
 const GeneralInformation = ({ formData, setFormData }) => {
   const [companies, setCompanies] = useState([]);
   const [processList, setProcessList] = useState([]);
+  const [Role_id, setRole_id] = useState(null);
+
   const searchParams = useSearchParams();
   const id = searchParams.get("id");
+  useEffect(() => {
+    const Role = typeof window !== 'undefined' ? localStorage.getItem('role') : null;
+    setRole_id(Role);
+  }, []);
+ 
+  const isEditable = Role_id === '1';
+ 
 
   useEffect(() => {
     const initialFormData = fields.reduce((acc, field) => {
@@ -115,38 +124,44 @@ const GeneralInformation = ({ formData, setFormData }) => {
   }, [id, setFormData]);
 
   const handleCompanyChange = (event, newValue) => {
-    if (newValue) {
-      setFormData((prevData) => ({
-        ...prevData,
-        client_id: newValue.name,
-        process: "", // Reset process when company changes
-        process_list: newValue.process_list,
-      }));
-      setProcessList(newValue.process_list);
-    } else {
-      setFormData((prevData) => ({
-        ...prevData,
-        client_id: "",
-        process: "",
-        process_list: [],
-      }));
-      setProcessList([]);
+    if (isEditable) {
+      if (newValue) {
+        setFormData((prevData) => ({
+          ...prevData,
+          client_id: newValue.name,
+          process: "",
+          process_list: newValue.process_list,
+        }));
+        setProcessList(newValue.process_list);
+      } else {
+        setFormData((prevData) => ({
+          ...prevData,
+          client_id: "",
+          process: "",
+          process_list: [],
+        }));
+        setProcessList([]);
+      }
     }
   };
 
   const handleProcessChange = (event, newValue) => {
-    setFormData((prevData) => ({
-      ...prevData,
-      process: newValue,
-    }));
+    if (isEditable) {
+      setFormData((prevData) => ({
+        ...prevData,
+        process: newValue,
+      }));
+    }
   };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prevData) => ({
-      ...prevData,
-      [name]: value,
-    }));
+    if (isEditable) {
+      setFormData((prevData) => ({
+        ...prevData,
+        [name]: value,
+      }));
+    }
   };
 
   return (
@@ -164,6 +179,7 @@ const GeneralInformation = ({ formData, setFormData }) => {
               }
               onChange={handleCompanyChange}
               options={companies}
+              disabled={!isEditable}
               getOptionLabel={(option) => option.name}
               renderInput={(params) => (
                 <TextField
@@ -181,6 +197,7 @@ const GeneralInformation = ({ formData, setFormData }) => {
               value={formData.process || ""}
               onChange={handleProcessChange}
               options={processList}
+              disabled={!isEditable}
               getOptionLabel={(option) => option}
               renderInput={(params) => (
                 <TextField
@@ -197,6 +214,7 @@ const GeneralInformation = ({ formData, setFormData }) => {
             <TextField
               select
               name={field.name}
+              disabled={!isEditable}
               value={formData[field.name]}
               onChange={handleChange}
               label={field.label}
@@ -215,6 +233,7 @@ const GeneralInformation = ({ formData, setFormData }) => {
             <DateFormate
               name={field.name}
               label={field.label}
+              disabled={!isEditable}
               value={formData[field.name]}
               onChange={handleChange}
             />
@@ -222,6 +241,7 @@ const GeneralInformation = ({ formData, setFormData }) => {
             <TextField
               type={field.type}
               name={field.name}
+              disabled={!isEditable}
               value={formData[field.name] || ""}
               onChange={handleChange}
               label={field.label}

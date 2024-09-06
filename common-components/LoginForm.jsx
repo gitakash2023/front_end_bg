@@ -1,8 +1,8 @@
 "use client";
 import React, { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { TextField, Button, Grid, Typography, CircularProgress, Box, Container } from "@mui/material";
+import { TextField, Button, Typography, CircularProgress, Box, Container } from "@mui/material";
 import { FaUser, FaLock } from "react-icons/fa";
 import { _createlogin } from "../utils/apiUtils";
 import Logo from "./header-components/Logo";
@@ -15,6 +15,9 @@ const LoginPage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const candidateId = searchParams.get("candidateId");
+  console.log("inide login",candidateId)
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -25,57 +28,57 @@ const LoginPage = () => {
   };
 
   const handleSubmit = async (e) => {
-
-  
-
-      const urlParams = new URLSearchParams(window.location.search);
-      const id = urlParams.get("id");
-      console.log(id);
-
     e.preventDefault();
     setLoading(true);
 
     try {
       const response = await _createlogin("/users/login", formData);
       const { user_role } = response;
+      
+      if (typeof window !== 'undefined') { 
+        localStorage.setItem('role', user_role);
+      }
+     
       setFormData({ username: "", password: "" });
       setError(null);
 
+      let redirectPath = '';
+
       switch (user_role) {
         case 1:
-          router.push("/admin/admin-dashboard");
+          redirectPath = "/admin/admin-dashboard";
           break;
         case 2:
-          router.push("/client/client-dashboard");
+          redirectPath = "/client/client-dashboard";
           break;
         case 3:
-          if(id){
-           router.push(`/admin/candidates/add-candidates?id=${id}`);
-          }else{
-            router.push(`/admin/candidates/add-candidates`);
-          }
+          redirectPath = candidateId ? `/admin/candidates/add-candidates?id=${candidateId}` : `/admin/candidates/add-candidates`;
           break;
         case 4:
-          router.push("/geninfo/dashboard");
+          redirectPath = "/geninfo/dashboard";
           break;
         case 5:
-          router.push("/educationinfo/dashboard");
+          redirectPath = "/educationinfo/dashboard";
           break;
         case 6:
-          router.push("/addressinfo/dashboard");
+          redirectPath = "/addressinfo/dashboard";
           break;
         case 7:
-          router.push("/cibilinfo/dashboard");
+          redirectPath = "/cibilinfo/dashboard";
           break;
         case 8:
-          router.push("/referenceinfo/dashboard");
+          redirectPath = "/referenceinfo/dashboard";
           break;
-          case 9:
-            router.push("/experienceinfo/dashboard");
-            break;
+        case 9:
+          redirectPath = "/experienceinfo/dashboard";
+          break;
         default:
           setError("Invalid user role.");
+          setLoading(false);
+          return;
       }
+
+      router.push(redirectPath);
     } catch (error) {
       setError(error.message);
     } finally {

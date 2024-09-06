@@ -9,7 +9,7 @@ const handleApiError = (error) => {
 
 export const BASE_URL = "https://bgv-backend.vitsinco.com";
 
-// export const BASE_URL = "http://localhost:8080";
+// export const BASE_URL = "https://internal.vitsinco.com";
 
 // Function to retrieve all posts
 export const _getAll = async (endpoint) => {

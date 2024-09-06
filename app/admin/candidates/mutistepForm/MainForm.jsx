@@ -44,6 +44,7 @@ const MainForm = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const candidate_id = searchParams.get("id");
+  console.log("candidate",candidate_id)
   const stepParam = searchParams.get("step");
 
   const [candidateId, setCandidateId] = useState(candidate_id);
@@ -187,8 +188,7 @@ const MainForm = () => {
         return <WorkExperience formData={stepData} setFormData={setStepData} candidate_id={candidateId} />;
       case 5:
         return <OtherReferenceInformation formData={stepData} setFormData={setStepData} candidate_id={candidateId} />;
-      default:
-        return "Unknown step";
+      
     }
   };
 

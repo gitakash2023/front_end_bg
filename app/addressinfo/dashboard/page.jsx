@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { DataGrid } from '@mui/x-data-grid';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
@@ -9,72 +9,49 @@ import InputLabel from '@mui/material/InputLabel';
 import FormControl from '@mui/material/FormControl';
 import { CSVLink } from 'react-csv';
 import { Box, Typography, Paper } from '@mui/material';
-
-const initialAddressRows = [
-  {
-    id: 1,
-    candidate_id: "C001",
-    name: "John Doe",
-    father_name: "Michael Doe",
-    dob: "1990-01-01",
-    address_type: "Current",
-    country_id: "India",
-    state_id: "Delhi",
-    district_id: "New Delhi",
-    city_id: "New Delhi",
-    postal_id: "110001",
-    house_type: "Owned",
-    stay_from_date: "2021-01-01",
-    stay_till_date: "2023-01-01",
-    full_address: "123 Main Street, New Delhi",
-    address_proof_file_name: "current_address_proof.pdf",
-    status: 'Unverified',
-  },
-  {
-    id: 2,
-    candidate_id: "C002",
-    name: "Jane Smith",
-    father_name: "Robert Smith",
-    dob: "1985-05-15",
-    address_type: "Permanent",
-    country_id: "India",
-    state_id: "Maharashtra",
-    district_id: "Mumbai",
-    city_id: "Mumbai",
-    postal_id: "400001",
-    house_type: "Rented",
-    stay_from_date: "2019-01-01",
-    stay_till_date: "2021-12-31",
-    full_address: "456 Another Street, Mumbai",
-    address_proof_file_name: "permanent_address_proof.docx",
-    status: 'Unverified',
-  },
-  {
-    id: 3,
-    candidate_id: "C003",
-    name: "Alice Johnson",
-    father_name: "James Johnson",
-    dob: "1992-07-22",
-    address_type: "Previous",
-    country_id: "India",
-    state_id: "Karnataka",
-    district_id: "Bangalore",
-    city_id: "Bangalore",
-    postal_id: "560001",
-    house_type: "Owned",
-    stay_from_date: "2015-01-01",
-    stay_till_date: "2019-12-31",
-    full_address: "789 Old Street, Bangalore",
-    address_proof_file_name: "previous_address_proof.pdf",
-    status: 'Unverified',
-  }
-  // Add more rows as needed
-];
+import { _getAll } from '../../../utils/apiUtils'; // Corrected import
 
 const AddressInfoDashboard = () => {
-  const [rows, setRows] = useState(initialAddressRows);
+  const [rows, setRows] = useState([]);
   const [statusFilter, setStatusFilter] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await _getAll("/candidate");
+        console.log("response", response);
+    
+        const data = response.map((item) => ({
+          candidate_id: item.user_id,
+          name: item.name,
+          father_name: item.father_name,
+          dob: item.dob ? item.dob.split('T')[0] : '', // Check for null/undefined
+          id: item.CandidteAddresses ? item.CandidteAddresses.map(addr => addr.id) : [],
+          address_type: item.CandidteAddresses ? item.CandidteAddresses.map(addr => addr.address_type) : [],
+          country_id: item.CandidteAddresses ? item.CandidteAddresses.map(addr => addr.country_id) : [],
+          state_id: item.CandidteAddresses ? item.CandidteAddresses.map(addr => addr.state_id) : [],
+          district_id: item.CandidteAddresses ? item.CandidteAddresses.map(addr => addr.district_id) : [],
+          city_id: item.CandidteAddresses ? item.CandidteAddresses.map(addr => addr.city_id) : [],
+          postal_id: item.CandidteAddresses ? item.CandidteAddresses.map(addr => addr.postal_id) : [],
+          house_type: item.CandidteAddresses ? item.CandidteAddresses.map(addr => addr.house_type) : [],
+          stay_from_date: item.CandidteAddresses ? item.CandidteAddresses.map(addr => addr.stay_from_date ? addr.stay_from_date.split('T')[0] : '') : [],
+          stay_till_date: item.CandidteAddresses ? item.CandidteAddresses.map(addr => addr.stay_till_date ? addr.stay_till_date.split('T')[0] : '') : [],
+          full_address: item.CandidteAddresses ? item.CandidteAddresses.map(addr => addr.full_address) : [],
+          address_proof_file_name: item.CandidteAddresses ? item.CandidteAddresses.map(addr => addr.address_proof_file) : [],
+          status: 'Unverified',
+        }));
+    
+        console.log(data);
+        setRows(data);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+    };
+    
+
+    fetchData();
+  }, []);
 
   const handleAction = useCallback((event, id) => {
     event.stopPropagation(); // Stop the row from being selected
@@ -164,7 +141,7 @@ const AddressInfoDashboard = () => {
           sx={{ flex: 1 }}
         />
         <CSVLink
-          data={rows}
+          data={filteredRows}
           headers={columns.map((col) => ({ label: col.headerName, key: col.field }))}
           filename={"address_data.csv"}
         >

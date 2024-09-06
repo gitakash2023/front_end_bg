@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { DataGrid } from '@mui/x-data-grid';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
@@ -8,44 +8,47 @@ import Select from '@mui/material/Select';
 import InputLabel from '@mui/material/InputLabel';
 import FormControl from '@mui/material/FormControl';
 import { CSVLink } from 'react-csv';
-import { Box, Typography, Paper } from '@mui/material';
+import { Box, Typography, Paper, CircularProgress } from '@mui/material';
 
-const initialCibilRows = [
-  {
-    id: 1,
-    candidate_id: "C001",
-    name: "John Doe",
-    father_name: "Michael Doe",
-    dob: "1990-01-01",
-    pan_number: "ABCDE1234F",
-    pan_card: "pan_card1.pdf",
-    cibil_score: "750",
-    cibil_report: "cibil_report1.pdf",
-    aadhar_number: "1234 5678 9012",
-    aadhar_card: "aadhar_card1.pdf",
-    status: 'Unverified'
-  },
-  {
-    id: 2,
-    candidate_id: "C002",
-    name: "Jane Smith",
-    father_name: "Robert Smith",
-    dob: "1985-05-15",
-    pan_number: "XYZAB5678G",
-    pan_card: "pan_card2.pdf",
-    cibil_score: "680",
-    cibil_report: "cibil_report2.pdf",
-    aadhar_number: "3456 7890 1234",
-    aadhar_card: "aadhar_card2.pdf",
-    status: 'Unverified'
-  },
-  // Add more rows as needed
-];
+import { _getAll } from '../../../utils/apiUtils'; // Adjust the import path as needed
 
 const CibilInfoDashboard = () => {
-  const [rows, setRows] = useState(initialCibilRows);
+  const [rows, setRows] = useState([]);
   const [statusFilter, setStatusFilter] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
+  const [loading, setLoading] = useState(true); // Loading state
+  const [error, setError] = useState(null); // Error state
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true); // Set loading to true while fetching
+        const response = await _getAll("/candidate"); // Adjust the API endpoint as needed
+        console.log("response", response);
+
+        const data = response.map((item) => ({
+          id: item.id,
+          candidate_id: item.candidate_id,
+          name: item.name,
+          father_name: item.father_name,
+          dob: item.dob ? item.dob.split('T')[0] : '',
+          pan_number: item.CandidteCibils ? item.CandidteCibils.map(pan => pan.pan_number) : [],
+          // pan_card: item.pan_card || '',
+          aadhar_number: item.CandidteCibils ? item.CandidteCibils.map(adhar => adhar.aadhar_number) : [],
+          status: item.status || 'Unverified',
+        }));
+
+        setRows(data);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+        setError('Error fetching data.'); // Set error message
+      } finally {
+        setLoading(false); // Set loading to false when done
+      }
+    };
+
+    fetchData();
+  }, []);
 
   const handleStatusChange = (event) => {
     setStatusFilter(event.target.value);
@@ -81,32 +84,15 @@ const CibilInfoDashboard = () => {
     { field: 'father_name', headerName: "Father's Name", width: 200 },
     { field: 'dob', headerName: 'Date of Birth', width: 150 },
     { field: 'pan_number', headerName: 'PAN Number', width: 150 },
-    {
-      field: 'pan_card',
-      headerName: 'PAN Card',
-      width: 200,
-      renderCell: (params) => (
-        <a href={`/${params.value}`} target="_blank" rel="noopener noreferrer">View</a>
-      )
-    },
-    { field: 'cibil_score', headerName: 'CIBIL Score', width: 150 },
-    {
-      field: 'cibil_report',
-      headerName: 'CIBIL Report',
-      width: 200,
-      renderCell: (params) => (
-        <a href={`/${params.value}`} target="_blank" rel="noopener noreferrer">View</a>
-      )
-    },
+    // {
+    //   field: 'pan_card',
+    //   headerName: 'PAN Card',
+    //   width: 200,
+    //   renderCell: (params) => (
+    //     <a href={`/${params.value}`} target="_blank" rel="noopener noreferrer">View</a>
+    //   )
+    // },
     { field: 'aadhar_number', headerName: 'Aadhar Number', width: 200 },
-    {
-      field: 'aadhar_card',
-      headerName: 'Aadhar Card',
-      width: 200,
-      renderCell: (params) => (
-        <a href={`/${params.value}`} target="_blank" rel="noopener noreferrer">View</a>
-      )
-    },
     { field: 'status', headerName: 'Final Status', width: 150 },
     {
       field: 'actions',
@@ -158,15 +144,23 @@ const CibilInfoDashboard = () => {
           <Button variant="contained" color="secondary">Export CSV</Button>
         </CSVLink>
       </Paper>
-      <div style={{ height: 600, width: '100%' }}>
-        <DataGrid
-          rows={filteredRows}
-          columns={columns}
-          pageSize={5}
-          rowsPerPageOptions={[5]}
-          checkboxSelection
-        />
-      </div>
+      {loading ? (
+        <Box display="flex" justifyContent="center" alignItems="center" height="100%">
+          <CircularProgress />
+        </Box>
+      ) : error ? (
+        <Typography color="error">{error}</Typography>
+      ) : (
+        <div style={{ height: 600, width: '100%' }}>
+          <DataGrid
+            rows={filteredRows}
+            columns={columns}
+            pageSize={5}
+            rowsPerPageOptions={[5]}
+            checkboxSelection
+          />
+        </div>
+      )}
     </Box>
   );
 };
